@@ -187,15 +187,16 @@ void loop()
     {
       Serial.print("\nDone!\n");
 
-      switch (mn%7) 
+      switch (mn%8) 
       {
         case 0: strncpy(curMessage, "Grognenferk!",BUF_SIZE-1); break;
-        case 1: strncpy(curMessage, "Yucky wine!",BUF_SIZE-1); break;
-        case 2: strncpy(curMessage, "Neighbourhood",BUF_SIZE-1); break;
+        case 1: strncpy(curMessage, "Neighbourhood",BUF_SIZE-1); break;
+        case 2: strncpy(curMessage, "5 ... 4 ... 3 ...  2 ... 1 ... Blastoff!!",BUF_SIZE-1); break;
         case 3: strncpy(curMessage, "NO SMOKING",BUF_SIZE-1); break;
         case 4: strncpy(curMessage, "3 ...  2 ... 1 ... GO!!!",BUF_SIZE-1); break;
         case 5: curMessage[0]=3; curMessage[1]=' ';curMessage[2]=3; curMessage[3]=' ';curMessage[4]=3; curMessage[5]='\0'; break;
         case 6: strncpy(curMessage, "Yanny! Laurel!",BUF_SIZE-1); break;
+        case 7: strncpy(curMessage, "Yucky wine!",BUF_SIZE-1); break;
       }
       msgDone = kState_Original_Message;
       ++mn;
