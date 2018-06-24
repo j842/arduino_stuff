@@ -190,7 +190,7 @@ void loop()
       switch (mn%8) 
       {
         case 0: strncpy(curMessage, "Grognenferk!",BUF_SIZE-1); break;
-        case 1: strncpy(curMessage, "Neighbourhood",BUF_SIZE-1); break;
+        case 1: strncpy(curMessage, "One minute until we blastoff!",BUF_SIZE-1); break;
         case 2: strncpy(curMessage, "5 ... 4 ... 3 ...  2 ... 1 ... Blastoff!!",BUF_SIZE-1); break;
         case 3: strncpy(curMessage, "NO SMOKING",BUF_SIZE-1); break;
         case 4: strncpy(curMessage, "3 ...  2 ... 1 ... GO!!!",BUF_SIZE-1); break;
