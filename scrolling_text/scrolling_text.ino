@@ -40,7 +40,14 @@ MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES
 #define BUF_SIZE  200
 char curMessage[BUF_SIZE];
 
-bool msgDone = false;
+typedef enum {
+  kState_NoMessage = 0,
+  kState_Original_Message,
+  kState_Clearing,
+  kState_Done
+} tMsgStateEnum;
+
+tMsgStateEnum msgDone=kState_NoMessage;
 
 uint16_t  scrollDelay;  // in milliseconds
 
@@ -78,10 +85,21 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
       // if we reached end of message, reset the message pointer
       if (*p == '\0')
       {
-        msgDone = true;
-        strncpy(curMessage, "    ",BUF_SIZE-1);
-        p = curMessage;
-        //p = curMessage;     // reset the pointer to start of message
+        if (msgDone == kState_Original_Message)
+        {
+          curMessage[0]='\0';
+          int i;
+          for (i=0;i<=8*MAX_DEVICES/CHAR_SPACING;++i)
+            curMessage[i]=' ';
+          curMessage[i]='\0';
+          p = curMessage;
+          msgDone = kState_Clearing;
+        }
+        else 
+        {
+          msgDone = kState_Done;
+          p = curMessage;
+        }
       }
       // !! deliberately fall through to next state to start displaying
 
@@ -147,19 +165,37 @@ void setup()
   scrollDelay = SCROLL_DELAY;
 #endif
 
-  strncpy(curMessage, "New Yucky Wine with White Vinegar and Salt,   and Marmite Twigs,    and Bird Seeds!   To Mr Bean From Tommy. ",BUF_SIZE-1);
+  //strncpy(curMessage, "New Yucky Wine with White Vinegar and Salt,   and Marmite Twigs,    and Bird Seeds!   To Mr Bean From Tommy.",BUF_SIZE-1);
+  strncpy(curMessage, "Hello!",BUF_SIZE-1);
   curMessage[BUF_SIZE-1]='\0';
+  msgDone = kState_Original_Message;
 
   Serial.begin(57600);
-  Serial.print("\n[MD_MAX72XX Message Display]\nType a message for the scrolling display\nEnd message line with a newline");
+  Serial.print("\nScrolling text!\n");
 }
 
 void loop()
 {
-  if (!msgDone)
+  if (msgDone > kState_NoMessage && msgDone < kState_Done )
   {
     scrollDelay = getScrollDelay();
     scrollText();
+
+    if (msgDone == kState_Done)
+    {
+      Serial.print("\nDone!\n");
+
+      switch (rand()%5) 
+      {
+        case 0: strncpy(curMessage, "Grognenferk!",BUF_SIZE-1); break;
+        case 1: strncpy(curMessage, "Yucky wine!",BUF_SIZE-1); break;
+        case 2: strncpy(curMessage, "Yanny! Laurel!",BUF_SIZE-1); break;
+        case 3: strncpy(curMessage, "NO SMOKING",BUF_SIZE-1); break;
+        case 4: curMessage[0]=3; curMessage[1]=' ';curMessage[2]=3; curMessage[3]=' ';curMessage[4]=3; curMessage[5]='\0'; break;
+      }
+      msgDone = kState_Original_Message;
+      
+    }
   }
 }
 
