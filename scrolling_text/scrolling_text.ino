@@ -172,8 +172,26 @@ void loop()
   
   int buttonState = digitalRead(BUTTON1_PIN);
 
+  static int buttoncount=0;
   if (buttonState==HIGH && PrevState==LOW)
-    setMessage(" ** STOP PUSHING ME!");
+  {
+    switch (buttoncount)
+    {
+      case 0: setMessage("Don't!"); break;
+      case 1: setMessage("No button pushing!"); break;
+      case 2: setMessage("Don't push the button!"); break;
+      case 3: setMessage("NO NO NO NO button pushing!"); break;
+      case 4: setMessage(" ** STOP PUSHING ME! ** "); break;
+      case 5: setMessage("It's naughty to push the button"); break;
+      case 6: setMessage("OUCH!!!"); break;
+      case 7: setMessage("Ow ow ow ow!"); break;
+      case 8: setMessage("... D O N ' T   P U S H ..."); break;
+      default:
+        setMessage("Squiggle factory.");
+    }
+    buttoncount++;
+    if (buttoncount>8) buttoncount=0;
+  }
   PrevState = buttonState;
   
   scrollText();
