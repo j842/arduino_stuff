@@ -25,16 +25,8 @@
 #define CS_PIN    11  // or SS
 MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
-
-
-// Scrolling parameters
-#if USE_POT_CONTROL
-#define SPEED_IN  A5
-#else
-#define SCROLL_DELAY  75  // in milliseconds
-#endif // USE_POT_CONTROL
-
-#define BUTTON1 3
+#define BUTTON1_PIN  3
+#define SPEED_IN    A5
 
 #define CHAR_SPACING  1 // pixels between characters
 
@@ -44,6 +36,7 @@ char curMessage[BUF_SIZE];
 
 typedef enum {
   kState_NoMessage = 0,
+  kState_Reset,
   kState_Original_Message,
   kState_Clearing,
   kState_Done
@@ -51,11 +44,7 @@ typedef enum {
 
 tMsgStateEnum msgDone=kState_NoMessage;
 
-uint8_t  state = 0;
-
-
 uint16_t  scrollDelay;  // in milliseconds
-
 
 void scrollDataSink(uint8_t dev, MD_MAX72XX::transformType_t t, uint8_t col)
 // Callback function for data that is being scrolled off the display
@@ -73,47 +62,56 @@ void scrollDataSink(uint8_t dev, MD_MAX72XX::transformType_t t, uint8_t col)
 uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
 // Callback function for data that is required for scrolling into the display
 {
+  static uint8_t scrollstate = 0;
   static char   *p = curMessage;
   static uint8_t  curLen, showLen;
   static uint8_t  cBuf[8];
   uint8_t colData;
 
+  if (msgDone==kState_Reset)
+    {
+      scrollstate=0;
+      msgDone=kState_Original_Message;
+    }
+
   // finite state machine to control what we do on the callback
-  switch(state)
+  switch(scrollstate)
   {
     case 0: // Load the next character from the font table
       showLen = mx.getChar(*p++, sizeof(cBuf)/sizeof(cBuf[0]), cBuf);
       curLen = 0;
-      state++;
+      scrollstate++;
 
       // if we reached end of message, reset the message pointer
       if (*p == '\0')
       {
         if (msgDone == kState_Original_Message)
-        {
-          curMessage[0]='\0';
-          int i;
-          for (i=0;i<=8*MAX_DEVICES/CHAR_SPACING;++i)
-            curMessage[i]=' ';
-          curMessage[i]='\0';
-          p = curMessage;
+        { // add enough spaces to scroll text off screen.
           msgDone = kState_Clearing;
         }
         else 
         {
-          msgDone = kState_Done;
           p = curMessage;
+          msgDone = kState_Done;
         }
       }
       // !! deliberately fall through to next state to start displaying
 
     case 1: // display the next part of the character
-      colData = cBuf[curLen++];
-      if (curLen == showLen)
+      if (msgDone==kState_Clearing)
       {
-        showLen = CHAR_SPACING;
-        curLen = 0;
-        state = 2;
+          showLen = 8*MAX_DEVICES;
+          curLen=0;
+          scrollstate=2;
+          break;
+      } else {
+        colData = cBuf[curLen++];
+        if (curLen == showLen)
+        {
+          showLen = CHAR_SPACING;
+          curLen = 0;
+          scrollstate = 2;
+        }        
       }
       break;
 
@@ -121,11 +119,11 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
       colData = 0;
       curLen++;
       if (curLen == showLen)
-        state = 0;
-      break;
-
+        scrollstate = 0;
+      break;     
+      
     default:
-      state = 0;
+      scrollstate = 0;
   }
 
   return(colData);
@@ -134,6 +132,7 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
  void scrollText(void)
 {
   static uint32_t prevTime = 0;
+  scrollDelay = getScrollDelay();
 
   // Is it time to scroll the text?
   if (millis()-prevTime >= scrollDelay)
@@ -145,16 +144,18 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
 
 uint16_t getScrollDelay(void)
 {
-#if USE_POT_CONTROL
   uint16_t  t;
 
   t = analogRead(SPEED_IN);
-  t = map(t, 0, 1023, 25, 250);
+  t = map(sqrt(t), 0, 32, 10, 100);  // 32^2 = 1024. Map to 10ms to 100ms.
 
   return(t);
-#else
-  return(SCROLL_DELAY);
-#endif
+}
+
+
+void setMessage(char * msg) {
+  strlcpy(curMessage,msg,BUF_SIZE);
+  msgDone=kState_Reset;
 }
 
 void setup()
@@ -163,18 +164,10 @@ void setup()
   mx.setShiftDataInCallback(scrollDataSource);
   mx.setShiftDataOutCallback(scrollDataSink);
 
-#if USE_POT_CONTROL
   pinMode(SPEED_IN, INPUT);
-#else
-  scrollDelay = SCROLL_DELAY;
-#endif
+  pinMode(BUTTON1_PIN,INPUT);
 
-  pinMode(BUTTON1,INPUT);
-
-  //strncpy(curMessage, "New Yucky Wine with White Vinegar and Salt,   and Marmite Twigs,    and Bird Seeds!   To Mr Bean From Tommy.",BUF_SIZE-1);
-  strncpy(curMessage, "Hello!",BUF_SIZE-1);
-  curMessage[BUF_SIZE-1]='\0';
-  msgDone = kState_Original_Message;
+  setMessage("Hello Tommy!");
 
   Serial.begin(57600);
   Serial.print("\nScrolling text!\n");
@@ -186,36 +179,30 @@ void loop()
   
   if (msgDone > kState_NoMessage && msgDone < kState_Done )
   {
-    int buttonState = digitalRead(BUTTON1);
+    int buttonState = digitalRead(BUTTON1_PIN);
 
     if (buttonState==HIGH)
-    {
-        state=0;
-        msgDone=kState_Original_Message;
-        strncpy(curMessage,"** STOP PUSHING ME!",BUF_SIZE-1);
-    }
+      setMessage(" ** STOP PUSHING ME!");
     
-    scrollDelay = getScrollDelay();
     scrollText();
 
     if (msgDone == kState_Done)
     {
       Serial.print("\nDone!\n");
 
-      switch (mn%8) 
+      switch (mn) 
       {
-        case 0: strncpy(curMessage, "Grognenferk is not a word!",BUF_SIZE-1); break;
-        case 1: strncpy(curMessage, "One minute until we blastoff!",BUF_SIZE-1); break;
-        case 2: strncpy(curMessage, "5 ... 4 ... 3 ...  2 ... 1 ... Blastoff!!",BUF_SIZE-1); break;
-        case 3: strncpy(curMessage, "NO SMOKING",BUF_SIZE-1); break;
-        case 4: strncpy(curMessage, "3 ...  2 ... 1 ... GO!!!",BUF_SIZE-1); break;
-        case 5: curMessage[0]=3; curMessage[1]=' ';curMessage[2]=3; curMessage[3]=' ';curMessage[4]=3; curMessage[5]='\0'; break;
-        case 6: strncpy(curMessage, "Yanny! Laurel!",BUF_SIZE-1); break;
-        case 7: strncpy(curMessage, "Yucky wine!",BUF_SIZE-1); break;
+        case 0: setMessage("Grognenferk is not a word!"); break;
+        case 1: setMessage("One minute until we blastoff!"); break;
+        case 2: setMessage("5 ... 4 ... 3 ...  2 ... 1 ... Blastoff!!"); break;
+        case 3: setMessage("NO SMOKING"); break;
+        case 4: setMessage("3 ...  2 ... 1 ... GO!!!"); break;
+        case 5: setMessage("Grognenferk IS a word!!"); break;
+        case 6: setMessage("Yanny! Laurel!"); break;
+        case 7: setMessage("Yucky wine!"); // fall through
+        default: mn=-1; break;
       }
-      msgDone = kState_Original_Message;
-      ++mn;
-      
+      ++mn;      
     }
   }
 }
