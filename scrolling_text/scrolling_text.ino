@@ -10,7 +10,7 @@
 #include <MD_MAX72xx.h>
 #include <SPI.h>
 
-#define USE_POT_CONTROL 0
+#define USE_POT_CONTROL 1
 #define PRINT_CALLBACK  0
 
 #define PRINT(s, v) { Serial.print(F(s)); Serial.print(v); }
@@ -19,7 +19,7 @@
 
 // Define the number of devices we have in the chain and the hardware interface
 #define HARDWARE_TYPE MD_MAX72XX::GENERIC_HW
-#define MAX_DEVICES 1
+#define MAX_DEVICES 2
 #define CLK_PIN   10  // or SCK
 #define DATA_PIN  12  // or MOSI
 #define CS_PIN    11  // or SS
@@ -33,6 +33,8 @@ MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES
 #else
 #define SCROLL_DELAY  75  // in milliseconds
 #endif // USE_POT_CONTROL
+
+#define BUTTON1 3
 
 #define CHAR_SPACING  1 // pixels between characters
 
@@ -48,6 +50,9 @@ typedef enum {
 } tMsgStateEnum;
 
 tMsgStateEnum msgDone=kState_NoMessage;
+
+uint8_t  state = 0;
+
 
 uint16_t  scrollDelay;  // in milliseconds
 
@@ -69,7 +74,6 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
 // Callback function for data that is required for scrolling into the display
 {
   static char   *p = curMessage;
-  static uint8_t  state = 0;
   static uint8_t  curLen, showLen;
   static uint8_t  cBuf[8];
   uint8_t colData;
@@ -165,6 +169,8 @@ void setup()
   scrollDelay = SCROLL_DELAY;
 #endif
 
+  pinMode(BUTTON1,INPUT);
+
   //strncpy(curMessage, "New Yucky Wine with White Vinegar and Salt,   and Marmite Twigs,    and Bird Seeds!   To Mr Bean From Tommy.",BUF_SIZE-1);
   strncpy(curMessage, "Hello!",BUF_SIZE-1);
   curMessage[BUF_SIZE-1]='\0';
@@ -180,6 +186,15 @@ void loop()
   
   if (msgDone > kState_NoMessage && msgDone < kState_Done )
   {
+    int buttonState = digitalRead(BUTTON1);
+
+    if (buttonState==HIGH)
+    {
+        state=0;
+        msgDone=kState_Original_Message;
+        strncpy(curMessage,"** STOP PUSHING ME!",BUF_SIZE-1);
+    }
+    
     scrollDelay = getScrollDelay();
     scrollText();
 
@@ -189,7 +204,7 @@ void loop()
 
       switch (mn%8) 
       {
-        case 0: strncpy(curMessage, "Grognenferk!",BUF_SIZE-1); break;
+        case 0: strncpy(curMessage, "Grognenferk is not a word!",BUF_SIZE-1); break;
         case 1: strncpy(curMessage, "One minute until we blastoff!",BUF_SIZE-1); break;
         case 2: strncpy(curMessage, "5 ... 4 ... 3 ...  2 ... 1 ... Blastoff!!",BUF_SIZE-1); break;
         case 3: strncpy(curMessage, "NO SMOKING",BUF_SIZE-1); break;
