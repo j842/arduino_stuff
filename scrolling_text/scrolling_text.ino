@@ -70,8 +70,10 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
 
   if (msgDone==kState_Reset)
     {
-      scrollstate=0;
-      msgDone=kState_Original_Message;
+      showLen = 8*MAX_DEVICES;
+      curLen=0;
+      scrollstate=2;
+      msgDone = kState_Clearing;
     }
 
   // finite state machine to control what we do on the callback
@@ -98,13 +100,6 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
       // !! deliberately fall through to next state to start displaying
 
     case 1: // display the next part of the character
-      if (msgDone==kState_Clearing)
-      {
-          showLen = 8*MAX_DEVICES;
-          curLen=0;
-          scrollstate=2;
-          break;
-      } else {
         colData = cBuf[curLen++];
         if (curLen == showLen)
         {
@@ -112,7 +107,6 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
           curLen = 0;
           scrollstate = 2;
         }        
-      }
       break;
 
     case 2: // display inter-character spacing (blank column)
@@ -153,7 +147,7 @@ uint16_t getScrollDelay(void)
 }
 
 
-void setMessage(char * msg) {
+void setMessage(const char * msg) {
   strlcpy(curMessage,msg,BUF_SIZE);
   msgDone=kState_Reset;
 }
@@ -176,13 +170,15 @@ void setup()
 void loop()
 {
   static int mn = 0;
+  static int PrevState = LOW;
   
   if (msgDone > kState_NoMessage && msgDone < kState_Done )
   {
     int buttonState = digitalRead(BUTTON1_PIN);
 
-    if (buttonState==HIGH)
+    if (buttonState==HIGH && PrevState==LOW)
       setMessage(" ** STOP PUSHING ME!");
+    PrevState = buttonState;
     
     scrollText();
 
