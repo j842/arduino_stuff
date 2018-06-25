@@ -19,7 +19,7 @@
 
 // Define the number of devices we have in the chain and the hardware interface
 #define HARDWARE_TYPE MD_MAX72XX::GENERIC_HW
-#define MAX_DEVICES 1
+#define MAX_DEVICES 2
 #define CLK_PIN   10  // or SCK
 #define DATA_PIN  12  // or MOSI
 #define CS_PIN    11  // or SS
