@@ -1,0 +1,22 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceFolder}/**",
+                "~/Arduino/libraries",
+                "~/Arduino/libraries/MD_MAX72XX/src",
+                "/usr/local/bin/arduino/hardware/arduino/avr/libraries/SPI/src",
+                "/usr/local/bin/arduino/hardware/arduino/avr/cores/arduino/",
+                "/usr/lib/avr/include",
+                "/usr/share/arduino/hardware/arduino/variants/standard/"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64"
+        }
+    ],
+    "version": 4
+}
