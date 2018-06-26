@@ -45,8 +45,7 @@ void loop()
       default:
         jscroll::set("Squiggle factory.");
     }
-    buttoncount++;
-    if (buttoncount>8) buttoncount=0;
+    buttoncount = (buttoncount+1) % 9;
   } else 
     if (jscroll::isDone())
     {
