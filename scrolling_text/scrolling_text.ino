@@ -1,25 +1,35 @@
 #include "jscroll.h"
 
+class button
+{
+  public:
+    button(uint8_t pin) : mPin(pin), PrevState(LOW) {}
+    ~button() {}
+    void setup() { pinMode(3,INPUT); }
+    bool goneHigh() {if (PrevState==LOW) {PrevState=digitalRead(mPin); return PrevState==HIGH;}}
+    bool goneLow()  {if (PrevState==HIGH) {PrevState=digitalRead(mPin); return PrevState==LOW;}}
+
+  private:
+    uint8_t mPin;
+    int PrevState;
+};
+
+
 // see also setup stuff in jscroll.h
-#define BUTTON1_PIN  3
+button b3(3);
+
 
 void setup()
 {
-  pinMode(BUTTON1_PIN,INPUT);
-
+  b3.setup();
   jscroll::setup();
-  jscroll::set("Hello Tommy!");
 }
 
 void loop()
 {
   static int mn = 0;
-  static int PrevState = LOW;
-  
-  int buttonState = digitalRead(BUTTON1_PIN);
-
   static int buttoncount=0;
-  if (buttonState==HIGH && PrevState==LOW)
+  if (b3.goneHigh())
   {
     switch (buttoncount)
     {
@@ -37,27 +47,25 @@ void loop()
     }
     buttoncount++;
     if (buttoncount>8) buttoncount=0;
-  }
-  PrevState = buttonState;
+  } else 
+    if (jscroll::isDone())
+    {
+      switch (mn) 
+      {
+        case 0: jscroll::set("Hello Tommy!"); break;
+        case 1: jscroll::set("One minute until we blastoff!"); break;
+        case 2: jscroll::set("5 ... 4 ... 3 ...  2 ... 1 ... Blastoff!!"); break;
+        case 3: jscroll::set("NO SMOKING"); break;
+        case 4: jscroll::set("3 ...  2 ... 1 ... GO!!!"); break;
+        case 5: jscroll::set("Grognenferk IS a word!!"); break;
+        case 6: jscroll::set("Yanny! Laurel!"); break;
+        case 7: jscroll::set("Yucky wine!"); // fall through
+        default: mn=-1; break;
+      }
+      ++mn;      
+    }
   
   jscroll::loop();
-
-  if (jscroll::isDone())
-  {
-    switch (mn) 
-    {
-      case 0: jscroll::set("Grognenferk is not a word!"); break;
-      case 1: jscroll::set("One minute until we blastoff!"); break;
-      case 2: jscroll::set("5 ... 4 ... 3 ...  2 ... 1 ... Blastoff!!"); break;
-      case 3: jscroll::set("NO SMOKING"); break;
-      case 4: jscroll::set("3 ...  2 ... 1 ... GO!!!"); break;
-      case 5: jscroll::set("Grognenferk IS a word!!"); break;
-      case 6: jscroll::set("Yanny! Laurel!"); break;
-      case 7: jscroll::set("Yucky wine!"); // fall through
-      default: mn=-1; break;
-    }
-    ++mn;      
-  }
 }
 
 

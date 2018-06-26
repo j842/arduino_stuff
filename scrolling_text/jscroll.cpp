@@ -13,7 +13,7 @@ namespace jscroll
 {
 
 MD_MAX72XX mx = MD_MAX72XX::MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
-char      mMsg[BUFLEN];
+char      mMsg[BUFLEN] = "Hello!";
 uint16_t  mScrollDelay;  // in milliseconds
 bool      mDone=true;
 bool      mReset=false;        
@@ -50,15 +50,24 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
       mReset=false;
       mDone=false;
     }
-
+    
   // finite state machine to control what we do on the callback
   switch(scrollstate)
   {
     case 0: // Load the next character from the font table
-      showLen = mx.getChar(*p++, sizeof(cBuf)/sizeof(cBuf[0]), cBuf);
-      curLen = 0;
-      scrollstate++;
-
+      if (*p=='\0' || mDone)
+      {
+        mDone=true;
+        scrollstate = 3;
+        break;
+      } 
+      else 
+      {    
+        showLen = mx.getChar(*p++, sizeof(cBuf)/sizeof(cBuf[0]), cBuf);
+        curLen = 0;
+        scrollstate = 1;
+      }
+      
       // !! deliberately fall through to next state to start displaying
 
     case 1: // display the next part of the character
@@ -79,7 +88,7 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
         if (*p=='\0')
         {
           mDone=true;
-          scrollstate=3;
+          scrollstate = 3;
         } 
         else
           scrollstate = 0;

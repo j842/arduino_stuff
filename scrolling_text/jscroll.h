@@ -23,7 +23,6 @@ namespace jscroll
         void reset();
         void loop();
         void setup();
-
         bool isDone();
 
         void scrollDataSink(uint8_t dev, MD_MAX72XX::transformType_t t, uint8_t col);
