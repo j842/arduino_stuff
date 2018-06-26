@@ -138,7 +138,7 @@ void loop(void)
 
 void set(const char * s) {
     strlcpy(jscroll::mMsg,s,BUFLEN);
-    jscroll::mReset = true;
+    mReset = true;
 }
 
 void setup()
