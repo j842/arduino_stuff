@@ -13,6 +13,9 @@ namespace jscroll
 {
 
 MD_MAX72XX mx = MD_MAX72XX::MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+
+#define BUFLEN 100
+
 char      mMsg[BUFLEN] = "Hello!";
 uint16_t  mScrollDelay;  // in milliseconds
 bool      mDone=true;
