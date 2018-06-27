@@ -12,7 +12,7 @@
 namespace jscroll
 {
 
-MD_MAX72XX mx = MD_MAX72XX::MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
 #define BUFLEN 100
 
@@ -53,16 +53,18 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
       mReset=false;
       mDone=false;
     }
+
+  if (mDone)
+    return 0;
     
   // finite state machine to control what we do on the callback
   switch(scrollstate)
   {
     case 0: // Load the next character from the font table
-      if (*p=='\0' || mDone)
+      if (*p=='\0')
       {
         mDone=true;
-        scrollstate = 3;
-        break;
+        return 0;
       } 
       else 
       {    
@@ -87,20 +89,8 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
       colData = 0;
       curLen++;
       if (curLen == showLen)
-      {
-        if (*p=='\0')
-        {
-          mDone=true;
-          scrollstate = 3;
-        } 
-        else
           scrollstate = 0;
-      }
       break;  
-
-    case 3: // msgDone - needs reset to get out of this.
-      colData = 0;
-      break;
           
     default:
       // should never get here.
@@ -134,11 +124,10 @@ void loop(void)
   }
 }
 
-
-
 void set(const char * s) {
-    strlcpy(jscroll::mMsg,s,BUFLEN);
+    strlcpy(mMsg,s,BUFLEN);
     mReset = true;
+    mDone  = false;
 }
 
 void setup()
