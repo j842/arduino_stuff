@@ -37,15 +37,15 @@ void loop()
   {
     switch (buttoncount)
     {
-      case 0: jscroll::set("Don't!"); break;
-      case 1: jscroll::set("No button pushing!"); break;
-      case 2: jscroll::set("Don't push the button!"); break;
-      case 3: jscroll::set("NO NO NO NO button pushing!"); break;
-      case 4: jscroll::set(" ** STOP PUSHING ME! ** "); break;
-      case 5: jscroll::set("It's naughty to push the button"); break;
-      case 6: jscroll::set("OUCH!!!"); break;
-      case 7: jscroll::set("Ow ow ow ow!"); break;
-      case 8: jscroll::set("... D O N ' T   P U S H ..."); break;
+      case 0: jscroll::set("   Don't!"); break;
+      case 1: jscroll::set("   No button pushing!"); break;
+      case 2: jscroll::set("   Don't push the button!"); break;
+      case 3: jscroll::set("   NO NO NO NO button pushing!"); break;
+      case 4: jscroll::set("   ** STOP PUSHING ME! ** "); break;
+      case 5: jscroll::set("   It's naughty to push the button"); break;
+      case 6: jscroll::set("   OUCH!!!"); break;
+      case 7: jscroll::set("   Ow ow ow ow!"); break;
+      case 8: jscroll::set("   ... D O N ' T   P U S H ..."); break;
       default:
         jscroll::set("Squiggle factory.");
     }
@@ -56,14 +56,14 @@ void loop()
     {
       switch (mn) 
       {
-        case 0: jscroll::set("Hello Tommy!"); break;
-        case 1: jscroll::set("One minute until we blastoff!"); break;
-        case 2: jscroll::set("5 ... 4 ... 3 ...  2 ... 1 ... Blastoff!!"); break;
-        case 3: jscroll::set("NO SMOKING"); break;
-        case 4: jscroll::set("3 ...  2 ... 1 ... GO!!!"); break;
-        case 5: jscroll::set("Grognenferk IS a word!!"); break;
-        case 6: jscroll::set("Yanny! Laurel!"); break;
-        case 7: jscroll::set("Yucky wine!"); // fall through
+        case 0: jscroll::set("Hello Tommy!   "); break;
+        case 1: jscroll::set("One minute until we blastoff!   "); break;
+        case 2: jscroll::set("5 ... 4 ... 3 ...  2 ... 1 ... Blastoff!!   "); break;
+        case 3: jscroll::set("NO SMOKING   "); break;
+        case 4: jscroll::set("3 ...  2 ... 1 ... GO!!!   "); break;
+        case 5: jscroll::set("Grognenferk IS a word!!   "); break;
+        case 6: jscroll::set("Yanny! Laurel!   "); break;
+        case 7: jscroll::set("Yucky wine!   "); // fall through
         default: mn=-1; break;
       }
       ++mn;      
