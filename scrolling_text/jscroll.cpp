@@ -35,33 +35,36 @@ void scrollDataSink(uint8_t dev, MD_MAX72XX::transformType_t t, uint8_t col)
 {
 }
 
-uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
+uint8_t scrollDataSource(uint8_t, MD_MAX72XX::transformType_t)
 // Callback function for data that is required for scrolling into the display
 {
   static uint8_t scrollstate = 0;
-  static const char *p = jscroll::mMsg;
+  static const char *p = mMsg;
   static uint8_t  curLen, showLen;
   static uint8_t  cBuf[8];
-  uint8_t colData;
+
+  uint8_t colData = 0; // empty column (space character).
 
   if (mReset)
     {
-      showLen = 8*MAX_DEVICES;
-      curLen=0;
-      scrollstate=2;
       p = mMsg;
+      scrollstate = 0;
       mReset=false;
       mDone=false;
+      return 0; // ensure we have one blank between messages.
     }
-    
+
+  if (mDone)
+    return 0;
+
+
   // finite state machine to control what we do on the callback
   switch(scrollstate)
   {
     case 0: // Load the next character from the font table
-      if (*p=='\0' || mDone)
+      if (*p=='\0')
       {
         mDone=true;
-        scrollstate = 3;
         break;
       } 
       else 
@@ -84,28 +87,19 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
       break;
 
     case 2: // display inter-character spacing (blank column)
-      colData = 0;
       curLen++;
       if (curLen == showLen)
       {
         if (*p=='\0')
-        {
-          mDone=true;
-          scrollstate = 3;
-        } 
+          mDone = true;
         else
           scrollstate = 0;
       }
       break;  
-
-    case 3: // msgDone - needs reset to get out of this.
-      colData = 0;
-      break;
           
     default:
       // should never get here.
-      colData = 0;
-      scrollstate = 0;
+      mDone=true;
   }
 
   return(colData);
@@ -113,11 +107,8 @@ uint8_t scrollDataSource(uint8_t dev, MD_MAX72XX::transformType_t t)
 
 uint16_t getScrollDelay(void)
 {
-  uint16_t  t;
-
-  t = analogRead(SPEED_IN);
+  uint16_t t = analogRead(SPEED_IN);
   t = map(sqrt(t), 0, 32, 25, 100);  // 32^2 = 1024. Map to 10ms to 100ms.
-
   return(t);
 }
 

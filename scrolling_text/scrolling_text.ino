@@ -3,15 +3,17 @@
 class button
 {
   public:
-    button(uint8_t pin) : mPin(pin), PrevState(LOW) {}
+    button(uint8_t pin) : mPin(pin), PrevState(LOW), CurState(LOW) {}
     ~button() {}
     void setup() { pinMode(3,INPUT); }
-    bool goneHigh() {if (PrevState==LOW) {PrevState=digitalRead(mPin); return PrevState==HIGH;}}
-    bool goneLow()  {if (PrevState==HIGH) {PrevState=digitalRead(mPin); return PrevState==LOW;}}
-
+    void readstate() { PrevState = CurState; CurState = digitalRead(mPin);}
+    bool goneHigh() {return (PrevState==LOW && CurState==HIGH);}
+    bool goneLow()  {return (PrevState==HIGH && CurState==LOW);}
+    
   private:
     uint8_t mPin;
     int PrevState;
+    int CurState;
 };
 
 
@@ -29,6 +31,8 @@ void loop()
 {
   static int mn = 0;
   static int buttoncount=0;
+
+  b3.readstate();
   if (b3.goneHigh())
   {
     switch (buttoncount)
@@ -46,8 +50,9 @@ void loop()
         jscroll::set("Squiggle factory.");
     }
     buttoncount = (buttoncount+1) % 9;
-  } else 
-    if (jscroll::isDone())
+  }
+
+  if (jscroll::isDone())
     {
       switch (mn) 
       {
