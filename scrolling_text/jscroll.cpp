@@ -12,7 +12,7 @@
 namespace jscroll
 {
 
-MD_MAX72XX mx = MD_MAX72XX::MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
+MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, DATA_PIN, CLK_PIN, CS_PIN, MAX_DEVICES);
 
 #define BUFLEN 100
 
@@ -57,7 +57,6 @@ uint8_t scrollDataSource(uint8_t, MD_MAX72XX::transformType_t)
   if (mDone)
     return 0;
 
-
   // finite state machine to control what we do on the callback
   switch(scrollstate)
   {
@@ -65,7 +64,7 @@ uint8_t scrollDataSource(uint8_t, MD_MAX72XX::transformType_t)
       if (*p=='\0')
       {
         mDone=true;
-        break;
+        return 0;
       } 
       else 
       {    
@@ -89,12 +88,7 @@ uint8_t scrollDataSource(uint8_t, MD_MAX72XX::transformType_t)
     case 2: // display inter-character spacing (blank column)
       curLen++;
       if (curLen == showLen)
-      {
-        if (*p=='\0')
-          mDone = true;
-        else
           scrollstate = 0;
-      }
       break;  
           
     default:
@@ -125,11 +119,10 @@ void loop(void)
   }
 }
 
-
-
 void set(const char * s) {
-    strlcpy(jscroll::mMsg,s,BUFLEN);
+    strlcpy(mMsg,s,BUFLEN);
     mReset = true;
+    mDone  = false;
 }
 
 void setup()
