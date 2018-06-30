@@ -2,10 +2,14 @@
 #define GREEN 5 
 #define RED 6
 #define BUZZER 8
+#define SERVO 9
 #define BUTTON1 11
 #define BUTTON2 12
+#define BUTTON3 13
 
 #include "pitches.h"
+#include "march.h"
+#include "xmas.h"
 #include <Servo.h>
 
 Servo myservo;  // create servo object to control a servo
@@ -24,13 +28,16 @@ void setup() {
   // put your setup code here, to run once:
   pinMode(BUTTON1, INPUT_PULLUP);
   pinMode(BUTTON2, INPUT_PULLUP);
+  pinMode(BUTTON3, INPUT_PULLUP);
 
   pinMode(RED, OUTPUT);
   pinMode(GREEN,OUTPUT); 
   pinMode(BLUE,OUTPUT);
   setled(0,0,0);
 
-  myservo.attach(9);  // attaches the servo on pin 9 to the servo object
+  pinMode(13,OUTPUT);
+
+  myservo.attach(SERVO);  // attaches the servo on pin 9 to the servo object
 }
 
 
@@ -47,10 +54,13 @@ int noteDurations[] = {
       // to calculate the note duration, take one second
       // divided by the note type.
       //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
+        digitalWrite(13, HIGH);
       int noteDuration = 1000/noteDurations[thisNote];
-      tone(8, melody[thisNote],noteDuration);
+      tone(BUZZER, melody[thisNote],noteDuration);
       //pause for the note's duration plus 30 ms:
       delay(noteDuration +30);
+        digitalWrite(13, LOW);
+
    }
 
 }
@@ -60,6 +70,18 @@ void loop() {
   static int phase = 0;
   static int button1state = HIGH;
   static int button2state = HIGH;
+  static int button3state = HIGH;
+
+  if (digitalRead(BUTTON3)==LOW)
+    button3state=LOW;
+  else // high
+    if (button3state==LOW)
+    {
+      button3state = HIGH;
+      //march();
+      jinglebells();
+    }
+
 
   if (digitalRead(BUTTON2)==LOW)
     button2state=LOW;
