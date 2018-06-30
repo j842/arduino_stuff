@@ -1,0 +1,25 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "/home/j/.arduino15/packages/arduino/hardware/avr/1.6.21/cores/arduino",
+                "${workspaceFolder}/**",
+                "/usr/share/arduino/libraries",
+                "/usr/share/arduino/libraries/Servo"
+            ],
+            "defines": [],
+            "compilerPath": "/usr/bin/gcc",
+            "cStandard": "c11",
+            "cppStandard": "c++17",
+            "intelliSenseMode": "clang-x64",
+            "browse": {
+                "limitSymbolsToIncludedHeaders": false,
+                "path": [
+                    "/home/j/.arduino15/packages/arduino/hardware/avr/1.6.21/cores/arduino"
+                ]
+            }
+        }
+    ],
+    "version": 4
+}

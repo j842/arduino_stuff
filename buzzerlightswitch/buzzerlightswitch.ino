@@ -11,7 +11,6 @@
 #define JOYX 0
 #define JOYY 1
 
-
 #include "pitches.h"
 #include "xmas.h"
 #include <Servo.h>
@@ -20,7 +19,7 @@ class servo
 {
   public:
     servo(int pin) : mPin(pin), mAngle(0) {}
-    setup() {   
+    void setup() {   
         mServo.attach(mPin);  // attaches the servo on pin 9 to the servo object
         mServo.write(mAngle);
     }
@@ -51,7 +50,7 @@ class button
 {
   public:
     button(int pin) : mPin(pin), mState(HIGH) {}
-    setup() {  pinMode(mPin, INPUT_PULLUP); }
+    void setup() {  pinMode(mPin, INPUT_PULLUP); }
     bool pressed() { 
       if (digitalRead(mPin)==LOW)
         mState=LOW;
