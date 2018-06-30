@@ -5,10 +5,9 @@
 #define SERVO 9
 #define BUTTON1 11
 #define BUTTON2 12
-#define BUTTON3 13
+#define BUTTON3 22
 
 #include "pitches.h"
-#include "march.h"
 #include "xmas.h"
 #include <Servo.h>
 
@@ -69,37 +68,11 @@ void setup() {
   myservo.attach(SERVO);  // attaches the servo on pin 9 to the servo object
 }
 
-
-void playstuff() {
-int melody[] = {
-NOTE_C4, NOTE_G3,NOTE_G3, NOTE_GS3, NOTE_G3,0, NOTE_B3, NOTE_C4};
-// note durations: 4 = quarter note, 8 = eighth note, etc.:
-
-int noteDurations[] = {
-   4, 8, 8, 4,4,4,4,4 
-};
-
- for (int thisNote = 0; thisNote < 8; thisNote++) {
-      // to calculate the note duration, take one second
-      // divided by the note type.
-      //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
-        digitalWrite(13, HIGH);
-      int noteDuration = 1000/noteDurations[thisNote];
-      tone(BUZZER, melody[thisNote],noteDuration);
-      //pause for the note's duration plus 30 ms:
-      delay(noteDuration +30);
-        digitalWrite(13, LOW);
-
-   }
-
-}
-
-
 void loop() {
   static int phase = 0;
 
   if (button1.pressed())
-      jinglebells();
+      xmas(phase);
 
   if (button2.pressed())
       playstuff();

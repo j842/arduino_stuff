@@ -33,8 +33,8 @@ int tempo[] = {
   4, 4
 };
 
-void jinglebells() {
-  int len = sizeof(melody) / sizeof(int);  
+void play(int * melody, int * tempo, int len)
+{  
  for (int thisNote = 0; thisNote < len; thisNote++) {
       // to calculate the note duration, take one second
       // divided by the note type.
@@ -97,3 +97,27 @@ int santa_tempo[] = {
   4, 2, 4,
   1
 };
+
+
+void xmas(int song) {
+  if (song==0)
+    play(melody,tempo, sizeof(melody) / sizeof(int));
+    else if (song==1)
+    play(wish_melody,wish_tempo,sizeof(wish_melody) / sizeof(int));
+    else
+    play(santa_melody,santa_tempo,sizeof(santa_tempo) / sizeof(int));
+}
+
+
+void playstuff() {
+  int melody[] = {
+  NOTE_C4, NOTE_G3,NOTE_G3, NOTE_GS3, NOTE_G3,0, NOTE_B3, NOTE_C4};
+  // note durations: 4 = quarter note, 8 = eighth note, etc.:
+
+  int noteDurations[] = {
+    4, 8, 8, 4,4,4,4,4 
+  };
+
+ play(melody, noteDurations, sizeof(melody) / sizeof(int));
+
+}
