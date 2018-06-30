@@ -40,7 +40,7 @@ void jinglebells() {
       // divided by the note type.
       //e.g. quarter note = 1000 / 4, eighth note = 1000/8, etc.
       digitalWrite(13, HIGH);
-      int noteDuration = 1000/tempo[thisNote];
+      int noteDuration = 2000/tempo[thisNote];
       tone(BUZZER, melody[thisNote],noteDuration);
       //pause for the note's duration plus 30 ms:
       delay(noteDuration +30);

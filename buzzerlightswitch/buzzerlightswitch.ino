@@ -15,6 +15,30 @@
 Servo myservo;  // create servo object to control a servo
 int pos = 0;    // variable to store the servo position
 
+class button 
+{
+  public:
+    button(int pin) : mPin(pin), mState(HIGH) {}
+    setup() {  pinMode(mPin, INPUT_PULLUP); }
+    bool pressed() { 
+      if (digitalRead(mPin)==LOW)
+        mState=LOW;
+      else // high
+        if (mState==LOW && (millis()-mLastPush>200))
+        {
+          mState = HIGH;
+          mLastPush = millis(); // debounce
+          return true;
+        }
+      return false;
+    }
+
+    int mState;
+    int mPin;
+    unsigned long mLastPush=0;
+      };
+
+
 
 void setled(int red, int green, int blue)
 { // values are 0 to 255.
@@ -24,11 +48,16 @@ void setled(int red, int green, int blue)
 }
 
 
+button button1(BUTTON1);
+button button2(BUTTON2);
+button button3(BUTTON3);
+
+
 void setup() {
   // put your setup code here, to run once:
-  pinMode(BUTTON1, INPUT_PULLUP);
-  pinMode(BUTTON2, INPUT_PULLUP);
-  pinMode(BUTTON3, INPUT_PULLUP);
+  button1.setup();
+  button2.setup();
+  button3.setup();
 
   pinMode(RED, OUTPUT);
   pinMode(GREEN,OUTPUT); 
@@ -68,38 +97,15 @@ int noteDurations[] = {
 
 void loop() {
   static int phase = 0;
-  static int button1state = HIGH;
-  static int button2state = HIGH;
-  static int button3state = HIGH;
 
-  if (digitalRead(BUTTON3)==LOW)
-    button3state=LOW;
-  else // high
-    if (button3state==LOW)
-    {
-      button3state = HIGH;
-      //march();
+  if (button1.pressed())
       jinglebells();
-    }
 
-
-  if (digitalRead(BUTTON2)==LOW)
-    button2state=LOW;
-  else // high
-    if (button2state==LOW)
-    {
-      button2state = HIGH;
+  if (button2.pressed())
       playstuff();
-    }
 
-
-  if (digitalRead(BUTTON1) == LOW)
-    button1state = LOW;
-  else // high
-    if (button1state == LOW) // released
-    {
-      button1state = HIGH;
-  
+  if (button3.pressed())
+  {  
       switch (phase)
       {
         case 0:
