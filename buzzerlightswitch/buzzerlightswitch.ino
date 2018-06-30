@@ -83,6 +83,8 @@ void setled(int red, int green, int blue)
 button button1(BUTTON1);
 button button2(BUTTON2);
 button button3(BUTTON3);
+
+button joyswitch1(JOYSWITCH);
 servo servo1(SERVO);
 
 
@@ -101,20 +103,26 @@ void setup() {
 
   pinMode(13,OUTPUT);
 
-  pinMode(JOYSWITCH, INPUT);
-  digitalWrite(JOYSWITCH, HIGH);
+  joyswitch1.setup();
+//  pinMode(JOYSWITCH, INPUT);
+//  digitalWrite(JOYSWITCH, HIGH);
 }
 
 void loop() {
   static int phase = 0;
 
+  static bool butmode = false;
+
+  if (joyswitch1.pressed())
+    butmode = !butmode;
+
   // joystick
   int joyx = analogRead(JOYX);
   int joyy = analogRead(JOYY);
   if (joyx<100 || joyy<100)
-    { servo1.rotateby(-10); delay(20); }
+    { servo1.rotateby(-1 * (butmode ? 5 : 2)); delay(20); }
   if (joyx>924 || joyy>924)
-    { servo1.rotateby(10); delay(20); }
+    { servo1.rotateby(1 * (butmode ? 5 : 2)); delay(20); }
 
   if (button1.pressed())
       xmas(phase);
