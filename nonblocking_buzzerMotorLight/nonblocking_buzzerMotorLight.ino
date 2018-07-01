@@ -6,6 +6,7 @@
 #define BUTTON1 11
 #define BUTTON2 12
 #define BUTTON3 22
+#define BUTTON4 24
 
 #define JOYSWITCH 2
 #define JOYX 0
@@ -27,6 +28,7 @@ void setled(int red, int green, int blue)
 jbutton button1(BUTTON1);
 jbutton button2(BUTTON2);
 jbutton button3(BUTTON3);
+jbutton button4(BUTTON4);
 jbutton joyswitch1(JOYSWITCH);
 
 jservo servo1(SERVO);
@@ -41,6 +43,7 @@ void setup() {
   button1.setup();
   button2.setup();
   button3.setup();
+  button4.setup();
   servo1.setup();
   buzzer1.setup();
   joyswitch1.setup();
@@ -77,6 +80,9 @@ void loop() {
 
   if (button2.pressed())
       buzzer1.playsong(4);
+
+  if (button4.pressed())
+      buzzer1.playsong(5);
 
   buzzer1.loop();
 

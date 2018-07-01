@@ -91,6 +91,12 @@ int tempo3[] = {
     4, 8, 8, 4,4,4,4,4 
   };
 
+int melody5[] = {                            // specific notes in the melody
+ NOTE_B3, NOTE_C5, NOTE_B5, NOTE_D5, NOTE_A4, NOTE_B4, NOTE_B5, NOTE_G4, NOTE_B4, NOTE_D4, NOTE_C4, NOTE_B4, NOTE_C5, NOTE_B5, 0, NOTE_C5, NOTE_B5, NOTE_G4, NOTE_B5, NOTE_FS4, NOTE_G4, NOTE_A5, NOTE_B5, NOTE_G3, NOTE_D4, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_D4, NOTE_G3, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_G3, NOTE_B4, NOTE_A4, NOTE_C5, NOTE_B5, NOTE_G4, NOTE_B5, NOTE_FS4, NOTE_G4, NOTE_A5, NOTE_B5, NOTE_G3, NOTE_D4, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_D4, NOTE_G3, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_G3, NOTE_B4, NOTE_A4 };
+ 
+int tempo5[] = {     // note durations: 4 = quarter note, 8 = eighth note, etc.:
+  4, 1, 4, 4, 4, 1, 4, 4, 2, 2, 8, 1, 8, 3, 2, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1 };
+ 
 
 
 
@@ -146,6 +152,11 @@ class jbuzzer
           melody = melody4;
           tempo = tempo4;
           len = sizeof(melody4) / sizeof(int);
+          break;
+        case 5:
+          melody = melody5;
+          tempo = tempo5;
+          len = sizeof(melody5) / sizeof(int);
           break;
         default:
           finish(); // play nothing.  
