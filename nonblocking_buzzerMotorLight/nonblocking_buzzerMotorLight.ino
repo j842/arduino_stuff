@@ -12,10 +12,12 @@
 #define JOYX 0
 #define JOYY 1
 
+#define MEMBRANE 32
+
 #include "jbuzzer.h"
 #include "jbutton.h"
 #include "jservo.h"
-
+#include "jmembrane.h"
 
 void setled(int red, int green, int blue)
 { // values are 0 to 255.
@@ -35,6 +37,8 @@ jservo servo1(SERVO);
 
 jbuzzer buzzer1(BUZZER);
 
+jmembrane membrane1(MEMBRANE);
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -47,6 +51,7 @@ void setup() {
   servo1.setup();
   buzzer1.setup();
   joyswitch1.setup();
+  membrane1.setup();
 
   pinMode(RED, OUTPUT);
   pinMode(GREEN,OUTPUT); 
@@ -86,6 +91,20 @@ void loop() {
 
   buzzer1.loop();
 
+  char c;
+  if (membrane1.getKey(c))
+  {
+    Serial.println(c);
+    if (c>='0' && c<='9')
+      buzzer1.playnote(600+100*(c-'0'),8);
+
+    if (c>='A' && c<='D')
+      buzzer1.playsong(c-'A'+1);
+
+    if (c=='#') {setled(0,255,0); buzzer1.playnote(NOTE_D5,4); phase=2;}
+    if (c=='*') {setled(0,0,255); buzzer1.playnote(NOTE_E5,4); phase=0;}
+  }
+  
   if (button3.pressed())
   {  
       switch (phase)
