@@ -8,6 +8,10 @@
 #define BUTTON3 22
 #define BUTTON4 24
 
+// Motion detector and indication LED.
+#define LED1 23
+#define PIRPIN 7
+
 #define JOYSWITCH 2
 #define JOYX 0
 #define JOYY 1
@@ -66,6 +70,11 @@ void setup() {
   pinMode(GREEN,OUTPUT); 
   pinMode(BLUE,OUTPUT);
   pinMode(13,OUTPUT);   // onboard LED.
+  pinMode(LED1, OUTPUT);
+
+  pinMode(PIRPIN, INPUT);
+
+  digitalWrite(LED1, LOW);
 
   lock();
 }
@@ -128,6 +137,11 @@ void loop_locked()
 void loop_unlocked() 
 {
   static bool butmode = false;
+
+  // Motion Detector and LED
+  int pirValue = digitalRead(PIRPIN);
+  digitalWrite(LED1, pirValue);
+
 
   if (joyswitch1.pressed())
     butmode = !butmode;

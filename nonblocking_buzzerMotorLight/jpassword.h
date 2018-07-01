@@ -3,6 +3,8 @@ char seps[] = " ,\t\n";
 #define MAXPASSWORDS 5
 #define MAXPASSLEN 20
 
+
+// to-do: write using array of indices into combined string rather than array of strings.
 class jpassword
 {
   public:
