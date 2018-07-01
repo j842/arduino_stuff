@@ -173,9 +173,9 @@ class jbuzzer
           {
             int noteDuration = 2000/(*tempo);
 
-            Serial.print(noteDuration);
-            Serial.print("\t");
-            Serial.println(*melody);
+//            Serial.print(noteDuration);
+//            Serial.print("\t");
+//            Serial.println(*melody);
             tone(mBuzzerPin, (*melody), noteDuration);
             //pause for the note's duration plus 30 ms:
             waitto = millis()+noteDuration+30;

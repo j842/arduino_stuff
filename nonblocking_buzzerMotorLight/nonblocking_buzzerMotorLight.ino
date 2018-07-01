@@ -19,6 +19,7 @@
 #include "jservo.h"
 #include "jmembrane.h"
 #include "jlcd.h"
+#include "jpassword.h"
 
 void setled(int red, int green, int blue)
 { // values are 0 to 255.
@@ -41,6 +42,10 @@ jbuzzer buzzer1(BUZZER);
 jmembrane membrane1(MEMBRANE);
 
 jlcd lcd1;
+
+jpassword password("1341");
+jpassword password2("1587");
+
 
 void setup() {
   // put your setup code here, to run once:
@@ -69,10 +74,53 @@ void setup() {
   lcd1.setmessage("Enter password!",NULL);
 }
 
+void loop_locked();
+void loop_unlocked();
+
 void loop() {
+  if (password.correct() || password2.correct())
+    loop_unlocked();
+  else
+    loop_locked();
+}
+
+void loop_locked() 
+{
+  char c;
+  if (membrane1.getKey(c) && (c>='0' && c<='9'))
+    {
+      buzzer1.playnote(600+100*(c-'0'),8);
+      password.addchar(c);
+      password2.addchar(c);
+
+      if (password.correct())
+         {
+            lcd1.setmessage("Hello Tommy!","Choose a song!"); // unlocked.
+            buzzer1.playnote(NOTE_D5,4);
+         }
+      else if (password2.correct())
+      {
+            lcd1.setmessage("Hello Jack!","Choose a song!"); // unlocked.
+            buzzer1.playnote(NOTE_E5,4);
+      }
+      else if (password.done())
+      {
+            lcd1.setmessage("Wrong password!","Try again.");
+            password.erase();
+            password2.erase();
+            buzzer1.playsong(4);        
+      }
+      else
+        lcd1.setmessage(password.userpassword(),NULL);
+    }
+
+  buzzer1.loop();
+}
+
+
+void loop_unlocked() 
+{
   static int phase = 0;
-  static char password[] = {'\0','\0','\0','\0','\0'};
-  static char secret[] = "1341";
   static bool butmode = false;
 
   if (joyswitch1.pressed())
@@ -100,34 +148,9 @@ void loop() {
   char c;
   if (membrane1.getKey(c))
   {
-    Serial.println(c);
     if (c>='0' && c<='9')
-    {
       buzzer1.playnote(600+100*(c-'0'),8);
 
-      if (strcmp(secret,password)!=0)
-      {
-        char ss[2];
-        ss[0]=c; ss[1]='\0';
-        strcat(password,ss);
-        if (strlen(password)==strlen(secret))
-        {
-          if (strcmp(password,secret)==0)
-          {
-            lcd1.setmessage("Hello Tommy!","Password right."); // unlocked.
-            buzzer1.playnote(NOTE_D5,1);
-          } else
-          {
-            lcd1.setmessage(NULL,"INCORRECT!");
-            buzzer1.playsong(4);
-            password[0]='\0';
-          }
-        }
-      }
-      
-      
-    }
-    
     if (c>='A' && c<='D')
       buzzer1.playsong(c-'A'+1);
 
