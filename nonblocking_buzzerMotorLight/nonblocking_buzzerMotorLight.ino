@@ -43,7 +43,7 @@ jmembrane membrane1(MEMBRANE);
 
 jlcd lcd1;
 
-jpassword password("1341 1587");
+jpassword password("1341 1587 1234 172348");
 
 void lock();
 
@@ -65,12 +65,7 @@ void setup() {
   pinMode(RED, OUTPUT);
   pinMode(GREEN,OUTPUT); 
   pinMode(BLUE,OUTPUT);
-  setled(255,0,0);
-
-  pinMode(13,OUTPUT);
-
-//  pinMode(JOYSWITCH, INPUT);
-//  digitalWrite(JOYSWITCH, HIGH);
+  pinMode(13,OUTPUT);   // onboard LED.
 
   lock();
 }
@@ -95,10 +90,24 @@ void loop_locked()
 
       if (password.match()>0)
          {
-            if (password.match()==1)
-              lcd1.setmessage("Hello Tommy!","Choose a song!"); // unlocked.
-            else 
-              lcd1.setmessage("Hello Jack!","Choose a song!"); // unlocked.
+            switch (password.match()) 
+            {
+              case 1:
+                lcd1.setmessage("Hello Tommy!","Choose a song!"); // unlocked.
+                break;
+              case 2:
+                 lcd1.setmessage("Hello Jack!","Choose a song!"); // unlocked.
+                 break;
+              case 3:
+                lcd1.setmessage("Hello Daddy!","It's not yours!");
+                break;
+              case 4:
+                lcd1.setmessage("Hi Mummy!","Tommy's turn!");
+                break;
+              default:
+                lcd1.setmessage(">>!>!>!","Who are you?");
+            }
+                
             buzzer1.playnote(NOTE_D5,4);
             setled(0,255,0);
          }
