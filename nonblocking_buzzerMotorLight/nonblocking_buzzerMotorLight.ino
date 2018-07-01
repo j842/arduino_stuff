@@ -18,6 +18,7 @@
 #include "jbutton.h"
 #include "jservo.h"
 #include "jmembrane.h"
+#include "jlcd.h"
 
 void setled(int red, int green, int blue)
 { // values are 0 to 255.
@@ -39,6 +40,7 @@ jbuzzer buzzer1(BUZZER);
 
 jmembrane membrane1(MEMBRANE);
 
+jlcd lcd1;
 
 void setup() {
   // put your setup code here, to run once:
@@ -52,6 +54,7 @@ void setup() {
   buzzer1.setup();
   joyswitch1.setup();
   membrane1.setup();
+  lcd1.setup();
 
   pinMode(RED, OUTPUT);
   pinMode(GREEN,OUTPUT); 
@@ -62,11 +65,14 @@ void setup() {
 
 //  pinMode(JOYSWITCH, INPUT);
 //  digitalWrite(JOYSWITCH, HIGH);
+
+  lcd1.setmessage("Enter password!",NULL);
 }
 
 void loop() {
   static int phase = 0;
-
+  static char password[] = {'\0','\0','\0','\0','\0'};
+  static char secret[] = "1341";
   static bool butmode = false;
 
   if (joyswitch1.pressed())
@@ -96,8 +102,32 @@ void loop() {
   {
     Serial.println(c);
     if (c>='0' && c<='9')
+    {
       buzzer1.playnote(600+100*(c-'0'),8);
 
+      if (strcmp(secret,password)!=0)
+      {
+        char ss[2];
+        ss[0]=c; ss[1]='\0';
+        strcat(password,ss);
+        if (strlen(password)==strlen(secret))
+        {
+          if (strcmp(password,secret)==0)
+          {
+            lcd1.setmessage("Hello Tommy!","Password right."); // unlocked.
+            buzzer1.playnote(NOTE_D5,1);
+          } else
+          {
+            lcd1.setmessage(NULL,"INCORRECT!");
+            buzzer1.playsong(4);
+            password[0]='\0';
+          }
+        }
+      }
+      
+      
+    }
+    
     if (c>='A' && c<='D')
       buzzer1.playsong(c-'A'+1);
 
