@@ -43,8 +43,9 @@ jmembrane membrane1(MEMBRANE);
 
 jlcd lcd1;
 
-jpassword password("1341");
-jpassword password2("1587");
+jpassword password("1341 1587");
+
+void lock();
 
 
 void setup() {
@@ -64,21 +65,21 @@ void setup() {
   pinMode(RED, OUTPUT);
   pinMode(GREEN,OUTPUT); 
   pinMode(BLUE,OUTPUT);
-  setled(0,0,0);
+  setled(255,0,0);
 
   pinMode(13,OUTPUT);
 
 //  pinMode(JOYSWITCH, INPUT);
 //  digitalWrite(JOYSWITCH, HIGH);
 
-  lcd1.setmessage("Enter password!",NULL);
+  lock();
 }
 
 void loop_locked();
 void loop_unlocked();
 
 void loop() {
-  if (password.correct() || password2.correct())
+  if (password.match()>0)
     loop_unlocked();
   else
     loop_locked();
@@ -87,27 +88,24 @@ void loop() {
 void loop_locked() 
 {
   char c;
-  if (membrane1.getKey(c) && (c>='0' && c<='9'))
+  if (membrane1.getKey(c))
     {
       buzzer1.playnote(600+100*(c-'0'),8);
       password.addchar(c);
-      password2.addchar(c);
 
-      if (password.correct())
+      if (password.match()>0)
          {
-            lcd1.setmessage("Hello Tommy!","Choose a song!"); // unlocked.
+            if (password.match()==1)
+              lcd1.setmessage("Hello Tommy!","Choose a song!"); // unlocked.
+            else 
+              lcd1.setmessage("Hello Jack!","Choose a song!"); // unlocked.
             buzzer1.playnote(NOTE_D5,4);
+            setled(0,255,0);
          }
-      else if (password2.correct())
-      {
-            lcd1.setmessage("Hello Jack!","Choose a song!"); // unlocked.
-            buzzer1.playnote(NOTE_E5,4);
-      }
       else if (password.done())
       {
             lcd1.setmessage("Wrong password!","Try again.");
             password.erase();
-            password2.erase();
             buzzer1.playsong(4);        
       }
       else
@@ -120,7 +118,6 @@ void loop_locked()
 
 void loop_unlocked() 
 {
-  static int phase = 0;
   static bool butmode = false;
 
   if (joyswitch1.pressed())
@@ -135,7 +132,7 @@ void loop_unlocked()
     { servo1.rotateby(1 * (butmode ? 5 : 2)); delay(20); }
 
   if (button1.pressed())
-      buzzer1.playsong(phase+1);
+      buzzer1.playsong(1);
 
   if (button2.pressed())
       buzzer1.playsong(4);
@@ -154,33 +151,19 @@ void loop_unlocked()
     if (c>='A' && c<='D')
       buzzer1.playsong(c-'A'+1);
 
-    if (c=='#') {setled(0,255,0); buzzer1.playnote(NOTE_D5,4); phase=2;}
-    if (c=='*') {setled(0,0,255); buzzer1.playnote(NOTE_E5,4); phase=0;}
+    if (c=='#') {buzzer1.playnote(NOTE_D5,4);}
+    if (c=='*') {lock(); return;}
+  }
+
+}
+
+  void lock()
+  {
+    buzzer1.playnote(NOTE_D5,4);
+    lcd1.setmessage("Enter password,","then press #");
+    setled(255,0,0);
+    password.erase();
   }
   
-  if (button3.pressed())
-  {  
-      switch (phase)
-      {
-        case 0:
-            setled(255,0,0);
-            buzzer1.playnote(NOTE_C5,4);
-            phase = 1;
-            break;
-  
-        case 1:
-            setled(0,255,0);
-            buzzer1.playnote(NOTE_D5,4);
-            phase = 2;
-            break;        
-  
-        default:
-            setled(0,0,255);
-            buzzer1.playnote(NOTE_E5,4);
-            phase = 0;
-            break;       
-      }
-  } 
-  
     
-}
+

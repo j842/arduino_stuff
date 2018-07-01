@@ -1,41 +1,67 @@
 
+char seps[] = " ,\t\n";
+#define MAXPASSWORDS 5
+#define MAXPASSLEN 20
 
 class jpassword
 {
   public:
-    jpassword(char * password) : mMatch(false), mLen(strlen(password))
+    // space separated passwords.
+    jpassword(char * passwords) : mMatch(0), mNumPasswords(0)
     {
-      mPassword = new char[mLen+1];
-      mUserEntry = new char[mLen+1];
+      for (int i=0;i<MAXPASSWORDS;++i)
+        mPasswords[i]=NULL;
+      
+      char * token;
+      token = strtok(passwords, seps );
+      while (token != NULL && mNumPasswords<MAXPASSWORDS)
+      {
+        mPasswords[mNumPasswords] = new char[strlen(token)+1];
+        strlcpy(mPasswords[mNumPasswords],token,MAXPASSLEN-1);
+        ++mNumPasswords;
 
-      strlcpy(mPassword,password,mLen+1);
+        token = strtok( NULL, seps);
+      }
+      
       erase();
     }
     ~jpassword() 
     {
-      delete mPassword;
-      delete mUserEntry;
+      for (int i=0;i<MAXPASSWORDS;++i)
+        delete[] mPasswords[i];
     }
 
     void addchar(char c)
     {
       if (done())
         return;
-      
-      char s[2]={c,'\0'};
-      strcat(mUserEntry,s);
+      if (c=='#')
+      {
+        mDone = true;
+        for (int i=0;i<MAXPASSWORDS;++i) 
+            if (mPasswords[i]!=NULL) 
+                if (0==strcmp(mPasswords[i],mUserEntry)) 
+                  mMatch=i+1;
+      }
+      else
+        {              
+        char s[2]={c,'\0'};
+        strcat(mUserEntry,s);
+        }
     }
+    
 
-    bool correct() {return (0==strcmp(mPassword,mUserEntry));}
-    bool done() {return strlen(mUserEntry)==mLen;}
-    void erase() {mUserEntry[0]='\0';}
-
-    char * userpassword() {return mUserEntry;}
+    int match() {return mMatch;}
+    bool correct() {return mMatch>0;}
+    bool done() {return mDone;}
+    void erase() {mUserEntry[0]='\0'; mDone=false; mMatch=0;}
+    const char * const userpassword() {return mUserEntry;}
 
   private:
-    char * mUserEntry;
-    char * mPassword;
-    int mLen;
-    bool mMatch;
+    char mUserEntry[MAXPASSLEN];
+    char * mPasswords[MAXPASSWORDS];
+    int mNumPasswords;
+    int mMatch;
+    bool mDone;
 };
 
