@@ -47,7 +47,7 @@ jmembrane membrane1(MEMBRANE);
 
 jlcd lcd1;
 
-jpassword password("1341 1587 1234 172348");
+jpassword password("1341 1587 1234 172348 3691238227");
 
 void lock();
 
@@ -102,6 +102,7 @@ void loop_locked()
             switch (password.match()) 
             {
               case 1:
+              case 5:
                 lcd1.setmessage("Hello Tommy!","Choose a song!"); // unlocked.
                 break;
               case 2:

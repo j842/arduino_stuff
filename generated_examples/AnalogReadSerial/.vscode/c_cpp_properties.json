@@ -1,0 +1,28 @@
+{
+    "configurations": [
+        {
+            "name": "Linux",
+            "includePath": [
+                "${workspaceRoot}",
+                "/usr/local/bin/arduino/hardware/tools",
+                "/usr/local/bin/arduino/libraries",
+                "/home/j/Documents/Arduino/hardware/tools",
+                "/home/j/Documents/Arduino/libraries"
+            ],
+            "browse": {
+                "path": [
+                    "${workspaceRoot}",
+                    "/usr/local/bin/arduino/hardware/tools",
+                    "/usr/local/bin/arduino/libraries",
+                    "/home/j/Documents/Arduino/hardware/tools",
+                    "/home/j/Documents/Arduino/libraries"
+                ],
+                "limitSymbolsToIncludedHeaders": false
+            },
+            "intelliSenseMode": "clang-x64",
+            "cStandard": "c11",
+            "cppStandard": "c++17"
+        }
+    ],
+    "version": 4
+}

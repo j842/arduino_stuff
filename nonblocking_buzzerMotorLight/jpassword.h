@@ -1,7 +1,7 @@
 
 char seps[] = " ,\t\n";
 #define MAXPASSWORDS 5
-#define MAXPASSLEN 20
+#define MAXPASSLEN 12
 
 
 // to-do: write using array of indices into combined string rather than array of strings.
@@ -48,7 +48,8 @@ class jpassword
       else
         {              
         char s[2]={c,'\0'};
-        strcat(mUserEntry,s);
+        if (strlen(mUserEntry)<MAXPASSLEN-1) // room for more characters.
+          strcat(mUserEntry,s);
         }
     }
     

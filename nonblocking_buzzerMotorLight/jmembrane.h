@@ -39,7 +39,12 @@ class jmembrane
 
     bool getKey(char & c)
     {
+      static char prev=0;
       c = customKeypad->getKey();
+      if (c==prev)
+        c=0;
+      else
+        prev=c;
       return c;
     }
 
