@@ -4,37 +4,27 @@ typedef enum {
   kReleased
 } kState;
 
+#define DEBOUNCE_MS (200)
+
 class jbutton 
 {
   public:
-    jbutton(int pin) : mPin(pin), mState(HIGH), mTriggered(false) {}
+    jbutton(int pin) : mPin(pin), mState(HIGH) {}
     void setup() {  pinMode(mPin, INPUT_PULLUP); }
     
     kState state() { 
       int newstate = digitalRead(mPin);
 
-      if (newstate!=mState)
-      {
-        mState = newstate;  
-        bool down = (mState==LOW);
+      if (newstate==mState || (millis()-mLastPush <= DEBOUNCE_MS))
+        return kUnchanged;
 
-        if (down && (millis()-mLastPush>200))
-          {
-            mTriggered = true;
-            mLastPush = millis();
-            return kPressed;
-          }
-        else if (!down && mTriggered)
-        {
-          mTriggered = false;
-          return kReleased;        
-        }
-      }
-      return kUnchanged;
+      mState = newstate;  
+      mLastPush = millis();
+
+      return (mState == LOW ? kPressed : kReleased);
     }
 
     int mState;
     int mPin;
     unsigned long mLastPush=0;
-    bool mTriggered;
 };
