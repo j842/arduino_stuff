@@ -122,7 +122,7 @@ int Tempos3[] = {
 
 
   int Notes4[] = {
-  NOTE_C4, NOTE_G3,NOTE_G3, NOTE_GS3, NOTE_G3,0, NOTE_B3, NOTE_C4};
+  NOTE_C4, NOTE_G3,NOTE_G3, NOTE_GS3, NOTE_G3,0, NOTE_B3, NOTE_C4};                        
   // mNoteIndex durations: 4 = quarter mNoteIndex, 8 = eighth mNoteIndex, etc.:
   int Tempos4[] = {
     4, 8, 8, 4,4,4,4,4 
