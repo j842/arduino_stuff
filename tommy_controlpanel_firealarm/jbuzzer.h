@@ -9,6 +9,43 @@
 #include "pitches.h"
 
 
+
+
+
+
+class jbuzzer
+{
+  public:
+    jbuzzer(int buzzerPin);
+    void setup() {pinMode(mBuzzerPin, OUTPUT);  }
+    void loop();
+
+    bool isPlaying();
+    void playsong(int s, bool repeat = false);
+    void finish();
+
+  private:
+    void playmNoteIndex(int freq, int dur);
+  
+    int * mNotePtr;
+    int * mTempoPtr;
+    int mNotesLen;
+    bool mPlaying;
+    int mNoteIndex;
+    int mBuzzerPin;
+    unsigned long waitto;
+    int mRepeatSong;
+
+    int m0[1];
+    int t0[1];
+};
+
+
+
+
+
+
+
 // Jingle Bells
 
 int Notes1[] = {
@@ -98,35 +135,18 @@ int Tempos5[] = {     // mNoteIndex durations: 4 = quarter mNoteIndex, 8 = eight
   4, 1, 4, 4, 4, 1, 4, 4, 2, 2, 8, 1, 8, 3, 2, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1 };
  
 
+int Notes6[] = { NOTE_G5, NOTE_E4 };
+int Tempos6[] = { 6, 4  };
 
 
 
-class jbuzzer
-{
-  public:
-    jbuzzer(int buzzerPin) : mBuzzerPin(buzzerPin), mRepeatSong(0) { finish(); }
+jbuzzer::jbuzzer(int buzzerPin) : mBuzzerPin(buzzerPin), mRepeatSong(0) { finish(); }
 
-    void setup() {}
-
-    bool isPlaying() {return mPlaying;}
-
-    void playmNoteIndex(int freq, int dur)
-    {
-      mNoteIndex =0;
-      waitto =0;
-      mPlaying=true;
-
-      m0[0]=freq;
-      t0[0]=dur;
-      
-      mNotePtr=m0;
-      mTempoPtr=t0;
-      mNotesLen = 1;
-    }
+bool jbuzzer::isPlaying() {return mPlaying;}
 
 #define SONGMAP( index ) case index: mNotePtr = Notes##index ; mTempoPtr = Tempos##index ; mNotesLen = sizeof( Notes##index ) / sizeof(int); break;
 
-    void playsong(int s, bool repeat = false)
+void jbuzzer::playsong(int s, bool repeat = false)
     {
       finish();
 
@@ -147,12 +167,13 @@ class jbuzzer
         SONGMAP(3)
         SONGMAP(4)
         SONGMAP(5)
+        SONGMAP(6)
         default:
           finish(); // play nothing.  
       }
     }
 
-    void loop()
+void jbuzzer::loop()
     {
       if (mPlaying && millis()>waitto)
         {
@@ -181,26 +202,26 @@ class jbuzzer
         }
     }
 
-    void finish()
+void jbuzzer::finish()
+{
+  mPlaying=false; mNoteIndex=0; waitto=0; mNotesLen=0;
+}
+
+
+void jbuzzer::playmNoteIndex(int freq, int dur)
     {
-      mPlaying=false; mNoteIndex=0; waitto=0; mNotesLen=0;
+      mNoteIndex =0;
+      waitto =0;
+      mPlaying=true;
+
+      m0[0]=freq;
+      t0[0]=dur;
+      
+      mNotePtr=m0;
+      mTempoPtr=t0;
+      mNotesLen = 1;
     }
 
 
-  private:
-    int * mNotePtr;
-    int * mTempoPtr;
-    int mNotesLen;
-    bool mPlaying;
-    int mNoteIndex;
-    int mBuzzerPin;
-    unsigned long waitto;
-    int mRepeatSong;
-
-    int m0[1];
-    int t0[1];
-};
-
-
-
+  
 
