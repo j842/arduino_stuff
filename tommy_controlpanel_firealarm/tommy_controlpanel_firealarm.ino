@@ -37,7 +37,7 @@ void loop()
   {
     case kPressed:
       led1.set(true);
-      buzzer1.playsong(1);
+      buzzer1.playsong(2);
       break;
     case kReleased:
       buzzer1.finish();

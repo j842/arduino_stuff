@@ -11,7 +11,7 @@
 
 // Jingle Bells
 
-int melody1[] = {
+int Notes1[] = {
   NOTE_E5, NOTE_E5, NOTE_E5,
   NOTE_E5, NOTE_E5, NOTE_E5,
   NOTE_E5, NOTE_G5, NOTE_C5, NOTE_D5,
@@ -22,7 +22,7 @@ int melody1[] = {
   NOTE_D5, NOTE_G5
 };
 
-int tempo1[] = {
+int Tempos1[] = {
   8, 8, 4,
   8, 8, 4,
   8, 8, 8, 8,
@@ -35,7 +35,7 @@ int tempo1[] = {
 
 // We wish you a merry Christmas
 
-int melody2[] = {
+int Notes2[] = {
   NOTE_B3, 
   NOTE_F4, NOTE_F4, NOTE_G4, NOTE_F4, NOTE_E4,
   NOTE_D4, NOTE_D4, NOTE_D4,
@@ -47,7 +47,7 @@ int melody2[] = {
   NOTE_F4
 };
 
-int tempo2[] = {
+int Tempos2[] = {
   4,
   4, 8, 8, 8, 8,
   4, 4, 4,
@@ -61,7 +61,7 @@ int tempo2[] = {
 
 // Santa Claus is coming to town
 
-int melody3[] = {
+int Notes3[] = {
   NOTE_G4,
   NOTE_E4, NOTE_F4, NOTE_G4, NOTE_G4, NOTE_G4,
   NOTE_A4, NOTE_B4, NOTE_C5, NOTE_C5, NOTE_C5,
@@ -72,7 +72,7 @@ int melody3[] = {
   NOTE_C4
 };
 
-int tempo3[] = {
+int Tempos3[] = {
   8,
   8, 8, 4, 4, 4,
   8, 8, 4, 4, 4,
@@ -84,17 +84,17 @@ int tempo3[] = {
 };
 
 
-  int melody4[] = {
+  int Notes4[] = {
   NOTE_C4, NOTE_G3,NOTE_G3, NOTE_GS3, NOTE_G3,0, NOTE_B3, NOTE_C4};
-  // note durations: 4 = quarter note, 8 = eighth note, etc.:
-  int tempo4[] = {
+  // mNoteIndex durations: 4 = quarter mNoteIndex, 8 = eighth mNoteIndex, etc.:
+  int Tempos4[] = {
     4, 8, 8, 4,4,4,4,4 
   };
 
-int melody5[] = {                            // specific notes in the melody
+int Notes5[] = {                            // specific mNoteIndexs in the mNotePtr
  NOTE_B3, NOTE_C5, NOTE_B5, NOTE_D5, NOTE_A4, NOTE_B4, NOTE_B5, NOTE_G4, NOTE_B4, NOTE_D4, NOTE_C4, NOTE_B4, NOTE_C5, NOTE_B5, 0, NOTE_C5, NOTE_B5, NOTE_G4, NOTE_B5, NOTE_FS4, NOTE_G4, NOTE_A5, NOTE_B5, NOTE_G3, NOTE_D4, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_D4, NOTE_G3, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_G3, NOTE_B4, NOTE_A4, NOTE_C5, NOTE_B5, NOTE_G4, NOTE_B5, NOTE_FS4, NOTE_G4, NOTE_A5, NOTE_B5, NOTE_G3, NOTE_D4, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_D4, NOTE_G3, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_G3, NOTE_B4, NOTE_A4 };
  
-int tempo5[] = {     // note durations: 4 = quarter note, 8 = eighth note, etc.:
+int Tempos5[] = {     // mNoteIndex durations: 4 = quarter mNoteIndex, 8 = eighth mNoteIndex, etc.:
   4, 1, 4, 4, 4, 1, 4, 4, 2, 2, 8, 1, 8, 3, 2, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1 };
  
 
@@ -108,58 +108,40 @@ class jbuzzer
 
     void setup() {}
 
-    bool isPlaying() {return playing;}
+    bool isPlaying() {return mPlaying;}
 
-    void playnote(int freq, int dur)
+    void playmNoteIndex(int freq, int dur)
     {
-      note =0;
+      mNoteIndex =0;
       waitto =0;
-      playing=true;
+      mPlaying=true;
 
       m0[0]=freq;
       t0[0]=dur;
       
-      melody=m0;
-      tempo=t0;
-      len = 1;
+      mNotePtr=m0;
+      mTempoPtr=t0;
+      mNotesLen = 1;
     }
+
+#define SONGMAP( index ) case index: mNotePtr = Notes##index ; mTempoPtr = Tempos##index ; mNotesLen = sizeof( Notes##index ) / sizeof(int); break;
 
     void playsong(int s)
     {
-      note = 0;
+      mNoteIndex = 0;
       waitto = 0;
-      playing=true;
+      mPlaying=true;
 
       Serial.print("Playing song ");
       Serial.println(s);
-      
+
       switch (s)
       {
-        case 1:
-          melody = melody1;
-          tempo = tempo1;
-          len = sizeof(melody1) / sizeof(int);
-          break;
-        case 2:
-          melody = melody2;
-          tempo = tempo2;
-          len = sizeof(melody2) / sizeof(int);
-          break;
-        case 3:
-          melody = melody3;
-          tempo = tempo3;
-          len = sizeof(melody3) / sizeof(int);
-          break;
-        case 4:
-          melody = melody4;
-          tempo = tempo4;
-          len = sizeof(melody4) / sizeof(int);
-          break;
-        case 5:
-          melody = melody5;
-          tempo = tempo5;
-          len = sizeof(melody5) / sizeof(int);
-          break;
+        SONGMAP(1)
+        SONGMAP(2)
+        SONGMAP(3)
+        SONGMAP(4)
+        SONGMAP(5)
         default:
           finish(); // play nothing.  
       }
@@ -167,40 +149,40 @@ class jbuzzer
 
     void loop()
     {
-      if (playing && millis()>waitto)
+      if (mPlaying && millis()>waitto)
         {
-          if (note==len)
+          if (mNoteIndex==mNotesLen)
             finish();
           else
           {
-            int noteDuration = 2000/(*tempo);
+            int mNoteIndexDuration = 2000/(*mTempoPtr);
 
-//            Serial.print(noteDuration);
+//            Serial.print(mNoteIndexDuration);
 //            Serial.print("\t");
-//            Serial.println(*melody);
-            tone(mBuzzerPin, (*melody), noteDuration);
-            //pause for the note's duration plus 30 ms:
-            waitto = millis()+noteDuration+30;
+//            Serial.println(*mNotePtr);
+            tone(mBuzzerPin, (*mNotePtr), mNoteIndexDuration);
+            //pause for the mNoteIndex's duration plus 30 ms:
+            waitto = millis()+mNoteIndexDuration+30;
 
-            ++melody;
-            ++tempo;
-            ++note;
+            ++mNotePtr;
+            ++mTempoPtr;
+            ++mNoteIndex;
           }
         }
     }
 
     void finish()
     {
-      playing=false; note=0; waitto=0; len=0;
+      mPlaying=false; mNoteIndex=0; waitto=0; mNotesLen=0;
     }
 
 
   private:
-    int * melody;
-    int * tempo;
-    int len;
-    bool playing;
-    int note;
+    int * mNotePtr;
+    int * mTempoPtr;
+    int mNotesLen;
+    bool mPlaying;
+    int mNoteIndex;
     int mBuzzerPin;
     unsigned long waitto;
 
