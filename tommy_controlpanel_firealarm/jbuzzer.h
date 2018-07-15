@@ -104,7 +104,7 @@ int Tempos5[] = {     // mNoteIndex durations: 4 = quarter mNoteIndex, 8 = eight
 class jbuzzer
 {
   public:
-    jbuzzer(int buzzerPin) : mBuzzerPin(buzzerPin) { finish(); }
+    jbuzzer(int buzzerPin) : mBuzzerPin(buzzerPin), mRepeatSong(0) { finish(); }
 
     void setup() {}
 
@@ -126,11 +126,16 @@ class jbuzzer
 
 #define SONGMAP( index ) case index: mNotePtr = Notes##index ; mTempoPtr = Tempos##index ; mNotesLen = sizeof( Notes##index ) / sizeof(int); break;
 
-    void playsong(int s)
+    void playsong(int s, bool repeat = false)
     {
-      mNoteIndex = 0;
-      waitto = 0;
+      finish();
+
       mPlaying=true;
+
+      if (repeat)
+        mRepeatSong = s;
+      else
+        mRepeatSong = 0;
 
       Serial.print("Playing song ");
       Serial.println(s);
@@ -152,7 +157,12 @@ class jbuzzer
       if (mPlaying && millis()>waitto)
         {
           if (mNoteIndex==mNotesLen)
-            finish();
+          {
+            if (mRepeatSong==0)
+              finish();
+            else 
+              playsong(mRepeatSong,true);
+          }
           else
           {
             int mNoteIndexDuration = 2000/(*mTempoPtr);
@@ -185,6 +195,7 @@ class jbuzzer
     int mNoteIndex;
     int mBuzzerPin;
     unsigned long waitto;
+    int mRepeatSong;
 
     int m0[1];
     int t0[1];
