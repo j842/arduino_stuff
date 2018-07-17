@@ -20,10 +20,10 @@ jlcd lcd1;
 class jrelay
 {
   public:
-    jrelay(int pin) : mPin(pin), mIsOn(false) {off();}
+    jrelay(int pin) : mPin(pin), mIsOn(false) {}
     void setup() { pinMode(mPin, OUTPUT);}
-    void off() { digitalWrite(mPin, LOW); mIsOn=false; }
-    void on() { digitalWrite(mPin, HIGH); mIsOn=true; }
+    void off() { digitalWrite(mPin, HIGH); mIsOn=false; }
+    void on() { digitalWrite(mPin, LOW); mIsOn=true; }
     bool ison() { return mIsOn;}
   private:
     int mPin;
@@ -70,6 +70,9 @@ void loop_locked()
 
       if (password.match()>0)
          {
+          relaypower.on();
+          relaystereo.on();
+          
             switch (password.match()) 
             {
               case 1:
@@ -109,6 +112,14 @@ void loop_unlocked()
 {
   buzzer1.loop();
 
+  if ( pushbutton1.state() == kPressed )
+  {
+    if (relaystereo.ison())
+      relaystereo.off();
+    else 
+      relaystereo.on();
+  }
+  
   char c;
   if (membrane1.getKey(c))
   {
