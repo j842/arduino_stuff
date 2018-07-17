@@ -1,53 +1,37 @@
-#define BLUE 3
-#define GREEN 5 
-#define RED 6
-#define BUZZER 8
-#define SERVO 9
-#define BUTTON1 11
-#define BUTTON2 12
-#define BUTTON3 22
-#define BUTTON4 24
-
-// Motion detector and indication LED.
-#define LED1 23
-#define PIRPIN 7
-
-#define JOYSWITCH 2
-#define JOYX 0
-#define JOYY 1
-
-#define MEMBRANE 32
+#define PUSHBUTTON 2
+#define RELAYSTEREO 3
+#define RELAYPOWER 4
+#define BUZZER 5
+#define MEMBRANE 6
 
 #include "jbuzzer.h"
 #include "jbutton.h"
-#include "jservo.h"
 #include "jmembrane.h"
-#include "jlcd.h"
 #include "jpassword.h"
+#include "jlcd.h"
 
-void setled(int red, int green, int blue)
-{ // values are 0 to 255.
-  analogWrite(RED, red);
-  analogWrite(GREEN, green);
-  analogWrite(BLUE, blue);
-}
-
-
-jbutton button1(BUTTON1);
-jbutton button2(BUTTON2);
-jbutton button3(BUTTON3);
-jbutton button4(BUTTON4);
-jbutton joyswitch1(JOYSWITCH);
-
-jservo servo1(SERVO);
-
+jbutton pushbutton1(PUSHBUTTON);
 jbuzzer buzzer1(BUZZER);
-
 jmembrane membrane1(MEMBRANE);
-
+jpassword password("1341 1587 1234 172348 3691238227");
 jlcd lcd1;
 
-jpassword password("1341 1587 1234 172348 3691238227");
+
+class jrelay
+{
+  public:
+    jrelay(int pin) : mPin(pin), mIsOn(false) {off();}
+    void setup() { pinMode(mPin, OUTPUT);}
+    void off() { digitalWrite(mPin, LOW); mIsOn=false; }
+    void on() { digitalWrite(mPin, HIGH); mIsOn=true; }
+    bool ison() { return mIsOn;}
+  private:
+    int mPin;
+    bool mIsOn;
+};
+
+jrelay relaystereo(RELAYSTEREO);
+jrelay relaypower(RELAYPOWER);
 
 void lock();
 
@@ -56,25 +40,12 @@ void setup() {
   // put your setup code here, to run once:
   Serial.begin(57600);
   
-  button1.setup();
-  button2.setup();
-  button3.setup();
-  button4.setup();
-  servo1.setup();
+  pushbutton1.setup();
   buzzer1.setup();
-  joyswitch1.setup();
   membrane1.setup();
+  relaypower.setup();
+  relaystereo.setup();
   lcd1.setup();
-
-  pinMode(RED, OUTPUT);
-  pinMode(GREEN,OUTPUT); 
-  pinMode(BLUE,OUTPUT);
-  pinMode(13,OUTPUT);   // onboard LED.
-  pinMode(LED1, OUTPUT);
-
-  pinMode(PIRPIN, INPUT);
-
-  digitalWrite(LED1, LOW);
 
   lock();
 }
@@ -103,10 +74,10 @@ void loop_locked()
             {
               case 1:
               case 5:
-                lcd1.setmessage("Hello Tommy!","Choose a song!"); // unlocked.
+                lcd1.setmessage("Hello Tommy!","* to lock"); // unlocked.
                 break;
               case 2:
-                 lcd1.setmessage("Hello Jack!","Choose a song!"); // unlocked.
+                 lcd1.setmessage("Hello Jack!","* to lock"); // unlocked.
                  break;
               case 3:
                 lcd1.setmessage("Hello Daddy!","It's not yours!");
@@ -137,33 +108,6 @@ void loop_locked()
 
 void loop_unlocked() 
 {
-  static bool butmode = false;
-
-  // Motion Detector and LED
-  int pirValue = digitalRead(PIRPIN);
-  digitalWrite(LED1, pirValue);
-
-
-  if (joyswitch1.pressed())
-    butmode = !butmode;
-
-  // joystick
-  int joyx = analogRead(JOYX);
-  int joyy = analogRead(JOYY);
-  if (joyx<100 || joyy<100)
-    { servo1.rotateby(-1 * (butmode ? 5 : 2)); delay(20); }
-  if (joyx>924 || joyy>924)
-    { servo1.rotateby(1 * (butmode ? 5 : 2)); delay(20); }
-
-  if (button1.pressed())
-      buzzer1.playsong(1);
-
-  if (button2.pressed())
-      buzzer1.playsong(4);
-
-  if (button4.pressed())
-      buzzer1.playsong(5);
-
   buzzer1.loop();
 
   char c;
@@ -185,7 +129,8 @@ void loop_unlocked()
   {
     buzzer1.playnote(NOTE_D5,4);
     lcd1.setmessage("Enter password,","then press #");
-    setled(255,0,0);
+    relaypower.off();
+    relaystereo.off();
     password.erase();
   }
   
