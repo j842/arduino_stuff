@@ -21,8 +21,8 @@ class jmembrane
     {
       for (int i=0;i<ROWS;++i)
       {
-        colPins[i] = 4+i+mPinStart;
-        rowPins[i] = i+mPinStart;
+        colPins[i] = 3-i+mPinStart;
+        rowPins[i] = 7-i+mPinStart;
       }
 
       customKeypad = new Keypad( makeKeymap(hexaKeys), rowPins, colPins, ROWS, COLS); 
