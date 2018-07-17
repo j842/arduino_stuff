@@ -146,7 +146,7 @@ bool jbuzzer::isPlaying() {return mPlaying;}
 
 #define SONGMAP( index ) case index: mNotePtr = Notes##index ; mTempoPtr = Tempos##index ; mNotesLen = sizeof( Notes##index ) / sizeof(int); break;
 
-void jbuzzer::playsong(int s, bool repeat = false)
+void jbuzzer::playsong(int s, bool repeat)
     {
       finish();
 

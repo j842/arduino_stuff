@@ -9,22 +9,22 @@ typedef enum {
 class jbutton 
 {
   public:
-    jbutton(int pin) : mPin(pin), mState(HIGH) {}
+    jbutton(int pin) : mPin(pin), mState(HIGH), mLastChange(0) {}
     void setup() {  pinMode(mPin, INPUT_PULLUP); }
     
     kState state() { 
       int newstate = digitalRead(mPin);
 
-      if (newstate==mState || (millis()-mLastPush <= DEBOUNCE_MS))
+      if (newstate==mState || (millis()-mLastChange <= DEBOUNCE_MS))
         return kUnchanged;
 
       mState = newstate;  
-      mLastPush = millis();
+      mLastChange = millis();
 
-      return (mState == LOW ? kPressed : kReleased);
+      return ((mState == LOW) ? kPressed : kReleased);
     }
 
     int mState;
     int mPin;
-    unsigned long mLastPush=0;
+    unsigned long mLastChange;
 };
