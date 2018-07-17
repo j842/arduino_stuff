@@ -9,7 +9,7 @@ class jlcd
  void setup() 
     { 
       lcd.init();
-      lcd.backlight();
+      lcd.noBacklight();
       lcd.noDisplay();
     }
 

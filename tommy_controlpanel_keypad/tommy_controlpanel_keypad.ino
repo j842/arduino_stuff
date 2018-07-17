@@ -129,8 +129,7 @@ void loop_unlocked()
     if (c>='A' && c<='D')
       buzzer1.playsong(c-'A'+1);
 
-    if (c=='#') {buzzer1.playnote(NOTE_D5,4);}
-    if (c=='*') {lock(); return;}
+    if (c=='*' || c=='#') {lock(); return;}
   }
 
 }

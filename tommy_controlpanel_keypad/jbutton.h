@@ -4,7 +4,7 @@ typedef enum {
   kReleased
 } kState;
 
-#define DEBOUNCE_MS (200)
+#define DEBOUNCE_MS (50)
 
 class jbutton 
 {

@@ -40,7 +40,7 @@ class jpassword
     {
       if (done())
         return;
-      if (c=='#')
+      if (c=='#' || c=='*')
       {
         mDone = true;
         for (int i=0;i<MAXPASSWORDS;++i) 

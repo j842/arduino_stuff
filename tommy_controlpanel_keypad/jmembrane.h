@@ -6,6 +6,8 @@
 #define ROWS 4
 #define COLS 4
 
+#define DEBOUNCE_MS (50)
+
 //define the cymbols on the buttons of the keypads
 char hexaKeys[ROWS][COLS] = {
   {'1','2','3','A'},
@@ -17,7 +19,7 @@ char hexaKeys[ROWS][COLS] = {
 class jmembrane
 {
   public:
-    jmembrane(int pinstart) : mPinStart(pinstart) 
+    jmembrane(int pinstart) : mPinStart(pinstart) , mLastChange(0)
     {
       for (int i=0;i<ROWS;++i)
       {
@@ -41,10 +43,13 @@ class jmembrane
     {
       static char prev=0;
       c = customKeypad->getKey();
-      if (c==prev)
+      if (c==prev || (millis()-mLastChange<DEBOUNCE_MS))
         c=0;
       else
+      {
         prev=c;
+        mLastChange=DEBOUNCE_MS;
+      }
       return c;
     }
 
@@ -53,5 +58,7 @@ class jmembrane
     byte rowPins[ROWS];
     byte colPins[COLS];
     Keypad * customKeypad;
+
+    unsigned long mLastChange;
 };
 
