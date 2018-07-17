@@ -33,7 +33,7 @@ class jmembrane
       delete customKeypad;
     }
 
-    setup() {
+    void setup() {
       
     }
 

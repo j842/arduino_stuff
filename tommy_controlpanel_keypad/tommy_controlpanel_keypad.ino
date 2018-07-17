@@ -90,7 +90,6 @@ void loop_locked()
             }
                 
             buzzer1.playnote(NOTE_D5,4);
-            setled(0,255,0);
          }
       else if (password.done())
       {

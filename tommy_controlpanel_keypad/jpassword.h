@@ -9,8 +9,11 @@ class jpassword
 {
   public:
     // space separated passwords.
-    jpassword(char * passwords) : mMatch(0), mNumPasswords(0)
+    jpassword(const char * p) : mMatch(0), mNumPasswords(0)
     {
+      char passwords[MAXPASSLEN*MAXPASSWORDS+1];
+      strlcpy(passwords,p,MAXPASSLEN*MAXPASSWORDS);
+      
       for (int i=0;i<MAXPASSWORDS;++i)
         mPasswords[i]=NULL;
       

@@ -13,7 +13,7 @@ class jlcd
       lcd.noDisplay();
     }
 
-  void setmessage(char * line1, char * line2)
+  void setmessage(const char * line1, const char * line2)
   {
     if (line1==NULL && line2==NULL)
     {
