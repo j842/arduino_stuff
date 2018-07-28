@@ -83,5 +83,7 @@ private:
     }
   } while (col >= (modStart * COL_SIZE));
 
+  mx.transform(MD_MAX72XX::TRC); // rotate 90o.
+
   mx.control(modStart, modEnd, MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
 }
