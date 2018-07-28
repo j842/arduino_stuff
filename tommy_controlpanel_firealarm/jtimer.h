@@ -41,17 +41,17 @@ class jtimer
 
     void loop_notrunning()
     {
-      int s = (int)(mPot->getval() * mMaxSecs); // 120 secs max.
+      int s = 10*(1+(mPot->getval_int() * mMaxSecs)/10240); // 120 secs max. Round to nearest 10s.
       if (s!=mTimeSecs)
-      {
-        mTimeSecs = s;
-        show(mTimeSecs);
-      }
+       {
+          mTimeSecs = s;
+          show(mTimeSecs);
+        }
 
       if (mButton_Blue->state()==kPressed)
       { // start timer.
         mRunning = true;
-        mFinishMillis = millis() + 1000*(uint32_t)(mTimeSecs);
+        mFinishMillis = millis() + 1000*mTimeSecs;
       }
     }
 
@@ -65,6 +65,7 @@ class jtimer
       bool mRunning;
       bool mPlaying;
       uint32_t mFinishMillis;
+      uint32_t mLastPotChange;
       int mTimeSecs;
       int mMaxSecs;
 

@@ -1,8 +1,15 @@
 
 
-#define HARDWARE_TYPE MD_MAX72XX::GENERIC_HW
+//#define HARDWARE_TYPE MD_MAX72XX::GENERIC_HW
+#define HARDWARE_TYPE MD_MAX72XX::PAROLA_HW
 #define CHAR_SPACING  1 // pixels between characters
 
+/*
+    PAROLA_HW,    ///< Use the Parola style hardware modules.
+    GENERIC_HW,   ///< Use 'generic' style hardware modules commonly available.
+    ICSTATION_HW, ///< Use ICStation style hardware module.
+    FC16_HW       ///< Use FC-16 style hardware module.
+*/
 
 // just display static text on the MAX7219.
 
@@ -83,7 +90,7 @@ private:
     }
   } while (col >= (modStart * COL_SIZE));
 
-  mx.transform(MD_MAX72XX::TRC); // rotate 90o.
+ // mx.transform(MD_MAX72XX::TRC); // rotate 90o.
 
   mx.control(modStart, modEnd, MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
 }
