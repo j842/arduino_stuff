@@ -4,7 +4,12 @@
 class jtimer
 {
   public:
-    jtimer(jbuzzer * buz, jtext * txt, jpot * pot, jbutton * butred, jbutton * butblue) : mBuzzer(buz), mText(txt), mPot(pot), mButton_Red(butred), mButton_Blue(butblue), mMaxSecs(120) { stoptimer(); }
+    jtimer(jbuzzer * buz, jtext * txt, jpot * pot, jbutton * butred, jbutton * butblue) : 
+    mBuzzer(buz), mText(txt), mPot(pot), mButton_Red(butred), mButton_Blue(butblue), mMaxSecs(120) { stoptimer(); }
+
+    void setup()
+    {
+    }
 
     void stoptimer()
     {
@@ -26,7 +31,8 @@ class jtimer
             show(secsr);
           if (secsr==0)
           {
-            mBuzzer->playsong(6,true); // repeat
+            mBuzzer->playsong(7,true); // repeat
+            mText->printText("Done!");
             mPlaying=true;
           }        
         }
@@ -41,7 +47,9 @@ class jtimer
 
     void loop_notrunning()
     {
-      int s = 10*(1+(mPot->getval_int() * mMaxSecs)/10240); // 120 secs max. Round to nearest 10s.
+      uint32_t s = 5+ (uint32_t)(mPot->getval())*mMaxSecs/1024; // 120 secs max. Round to nearest 10s.
+      if (s>mMaxSecs) s=mMaxSecs;
+
       if (s!=mTimeSecs)
        {
           mTimeSecs = s;
@@ -55,9 +63,10 @@ class jtimer
       }
     }
 
-    void show(int val)
+    void show(uint32_t val)
     {
       String s(val);
+      s += " s";
       mText->printText(s.c_str());
     }
 
@@ -65,9 +74,8 @@ class jtimer
       bool mRunning;
       bool mPlaying;
       uint32_t mFinishMillis;
-      uint32_t mLastPotChange;
-      int mTimeSecs;
-      int mMaxSecs;
+      uint32_t mTimeSecs;
+      uint32_t mMaxSecs;
 
       jbuzzer * mBuzzer;
       jtext * mText;

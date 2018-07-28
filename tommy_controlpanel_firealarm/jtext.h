@@ -1,7 +1,6 @@
 
 
-//#define HARDWARE_TYPE MD_MAX72XX::GENERIC_HW
-#define HARDWARE_TYPE MD_MAX72XX::PAROLA_HW
+#define HARDWARE_TYPE MD_MAX72XX::FC16_HW
 #define CHAR_SPACING  1 // pixels between characters
 
 /*
@@ -33,7 +32,7 @@ private:
 // Message area is padded with blank columns after printing.
 {
   uint8_t modStart = 0;
-  uint8_t modEnd = mNumDevices;
+  uint8_t modEnd = mNumDevices-1;
   
   uint8_t   state = 0;
   uint8_t   curLen;

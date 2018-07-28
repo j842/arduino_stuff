@@ -138,6 +138,8 @@ int Tempos5[] = {     // mNoteIndex durations: 4 = quarter mNoteIndex, 8 = eight
 int Notes6[] = { NOTE_G5, NOTE_E4 };
 int Tempos6[] = { 6, 4  };
 
+int Notes7[] = { NOTE_B3, NOTE_B4, NOTE_B5 };
+int Tempos7[] = { 8,8,8  };
 
 
 jbuzzer::jbuzzer(int buzzerPin) : mBuzzerPin(buzzerPin), mRepeatSong(0) { finish(); }
@@ -168,6 +170,7 @@ void jbuzzer::playsong(int s, bool repeat)
         SONGMAP(4)
         SONGMAP(5)
         SONGMAP(6)
+        SONGMAP(7)
         default:
           finish(); // play nothing.  
       }
