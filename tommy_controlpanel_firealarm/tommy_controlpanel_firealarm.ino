@@ -1,17 +1,29 @@
-#define RED 7
+#include <MD_MAX72xx.h>
+#include <SPI.h>
+
+
+#define REDLED 7
 #define BUZZER 8
-#define BUTTON 9
+#define ALARM_SWITCH 9
+#define BUTTON_BLUE 6
+#define BUTTON_RED 5
+
+#define HARDWARE_TYPE MD_MAX72XX::GENERIC_HW
+#define CS_PIN       10
+#define MAX_DEVICES  4
 
 #include "jbuzzer.h"
 #include "jbutton.h"
 #include "jled.h"
 
-jbutton button_alarm(BUTTON);
+jbutton button_alarm(ALARM_SWITCH);
 jbuzzer buzzer1(BUZZER);
-jled led1(RED);
+jled led1(REDLED);
 
-jbutton button_blue(BUTTON);
-jbutton button_red(BUTTON);
+jbutton button_blue(BUTTON_BLUE);
+jbutton button_red(BUTTON_RED);
+
+MD_MAX72XX mx = MD_MAX72XX(HARDWARE_TYPE, CS_PIN, MAX_DEVICES);
 
 
 class jpot {
