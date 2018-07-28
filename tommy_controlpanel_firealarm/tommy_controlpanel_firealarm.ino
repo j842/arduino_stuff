@@ -67,7 +67,10 @@ class jtimer
     void loop_running()
     {
       if (button_red.state()==kPressed)
+      {
           stoptimer();
+          buzzer1.finish();
+      }
       else
         if (!mPlaying)
         { 
