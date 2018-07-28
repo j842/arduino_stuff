@@ -4,18 +4,7 @@
 
 #include "jbuzzer.h"
 #include "jbutton.h"
-
-
-class jled {
-  public:
-  jled(int pin) : mPin(pin), mOn(false) {}
-  void setup(bool on) { pinMode(mPin,OUTPUT); mOn=!on; set(on);}
-  void set(bool on) { if (mOn!=on) digitalWrite(mPin, on?HIGH:LOW); mOn=on;}
-  void loop() {}
-  private:
-    int mPin;
-    bool mOn;
-};
+#include "jled.h"
 
 jbutton button1(BUTTON);
 jbuzzer buzzer1(BUZZER);
@@ -27,7 +16,7 @@ void setup() {
   
   button1.setup();
   buzzer1.setup();
-  led1.setup(false); // start off.
+  led1.setup(); // starts off.
 
 }
 
@@ -36,12 +25,12 @@ void loop()
   switch (button1.state())
   {
     case kPressed:
-      led1.set(true);
+      led1.seton(true);
       buzzer1.playsong(6,true); // repeat
       break; 
     case kReleased:
       buzzer1.finish();
-      led1.set(false);
+      led1.seton(false);
       break;
     default: ;
   }   
