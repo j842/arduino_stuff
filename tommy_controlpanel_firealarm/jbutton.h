@@ -1,3 +1,7 @@
+#ifndef __JBUTTON_H__
+#define __JBUTTON_H__
+
+
 typedef enum {
   kUnchanged=0,
   kPressed,
@@ -28,3 +32,5 @@ class jbutton
     int mPin;
     unsigned long mLastChange;
 };
+
+#endif
