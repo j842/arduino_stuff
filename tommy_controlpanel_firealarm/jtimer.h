@@ -5,7 +5,12 @@ class jtimer
 {
   public:
     jtimer(jbuzzer * buz, jtext * txt, jpot * pot, jbutton * butred, jbutton * butblue) : 
-    mBuzzer(buz), mText(txt), mPot(pot), mButton_Red(butred), mButton_Blue(butblue), mMaxSecs(120) { stoptimer(); }
+    mBuzzer(buz), mText(txt), mPot(pot), mButton_Red(butred), mButton_Blue(butblue) 
+    { 
+      mDimTime=millis();
+      mMaxSecs = 600;
+      stoptimer(); 
+    }
 
     void setup()
     {
@@ -13,29 +18,33 @@ class jtimer
 
     void stoptimer()
     {
-      mRunning=false; mFinishMillis=0; mTimeSecs=0; mPlaying=false;
+      mRunning=false; mFinishMillis=0; mTimeSecs=0; mPlaying=false; mStopPlayingMillis=0;
     }
 
     void loop_running()
     {
-      if (mButton_Red->state()==kPressed)
+      if (mButton_Red->state()==kPressed || (mPlaying && millis()>mStopPlayingMillis))
       {
           stoptimer();
           mBuzzer->finish();
+          dim();
+          return;
       }
-      else
-        if (!mPlaying)
-        { 
-          int secsr = (mFinishMillis-millis())/1000;
-          if (secsr>=0)
-            show(secsr);
-          if (secsr==0)
-          {
-            mBuzzer->playsong(7,true); // repeat
-            mText->printText("Done!");
-            mPlaying=true;
-          }        
-        }
+
+      if (mPlaying)
+        return;
+
+      // counter running, not playing.
+      int secsr = (mFinishMillis-millis())/1000;
+      if (secsr>=0)
+        show(secsr);
+      if (secsr==0)
+      {
+        mStopPlayingMillis = millis()+10*1000; // 10 secs max.
+        mBuzzer->playsong(7,true); // repeat
+        mText->printText("Done!");
+        mPlaying=true;
+      }        
     }
 
     void loop() {
@@ -45,28 +54,61 @@ class jtimer
         loop_notrunning();
     }
 
+    void dim()
+    {
+      show(0);
+      
+      mDimTime=0;
+    }
+
     void loop_notrunning()
     {
-      uint32_t s = 5+ (uint32_t)(mPot->getval())*mMaxSecs/1024; // 120 secs max. Round to nearest 10s.
+      uint32_t s = 1 + (uint32_t)(mPot->getval())*mMaxSecs/10/1024; // 120 secs max. Round to nearest 10s.
+      s=s*10;
       if (s>mMaxSecs) s=mMaxSecs;
 
       if (s!=mTimeSecs)
        {
+          mDimTime = millis()+10*1000;
           mTimeSecs = s;
           show(mTimeSecs);
         }
-
-      if (mButton_Blue->state()==kPressed)
+      else if (mButton_Blue->state()==kPressed)
       { // start timer.
         mRunning = true;
         mFinishMillis = millis() + 1000*mTimeSecs;
+      }
+      else if (mDimTime>0 && millis()>mDimTime)
+      {
+        dim();
       }
     }
 
     void show(uint32_t val)
     {
-      String s(val);
-      s += " s";
+      int mins=0;
+      int secs=val;
+
+      while (secs>=60)
+        {
+          ++mins;
+          secs-=60;
+        }
+      
+      String s(" ");
+
+      if (mins>0)
+      {
+        s += String(mins);
+        s += ":";
+        if (secs<10) s+="0";
+        s += String(secs);
+      }
+      else
+      {
+        s += String(secs);
+        s += "s";
+      }
       mText->printText(s.c_str());
     }
 
@@ -74,8 +116,10 @@ class jtimer
       bool mRunning;
       bool mPlaying;
       uint32_t mFinishMillis;
+      uint32_t mStopPlayingMillis;
       uint32_t mTimeSecs;
       uint32_t mMaxSecs;
+      uint32_t mDimTime;
 
       jbuzzer * mBuzzer;
       jtext * mText;

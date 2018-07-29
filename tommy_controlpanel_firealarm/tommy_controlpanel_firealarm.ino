@@ -46,18 +46,25 @@ void setup() {
   pot1.setup();
 }
 
-
 void loop() 
 {  
+  static uint32_t stopplayingmillis = 0;
+  
   switch (button_alarm.state())
   {
     case kPressed:
       led1.seton(true);
       buzzer1.playsong(6,true); // repeat
+      stopplayingmillis=millis()+10*1000; // only alarm for 10s.
       break; 
+    case kUnchanged:
+      if (stopplayingmillis==0 || millis()<stopplayingmillis)
+        break;
+        // otherwise fall through and turn off buzzer!  
     case kReleased:
       buzzer1.finish();
       led1.seton(false);
+      stopplayingmillis=0;
       break;
     default: 
       ;
