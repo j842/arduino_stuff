@@ -19,7 +19,7 @@ public:
   jtext(int pin, int numDevices=4) : mx(MD_MAX72XX(HARDWARE_TYPE, pin, numDevices)), mNumDevices(numDevices)  {}
   void setup() { mx.begin(); }
   void printText(const char *pMsg);
-  //void setintensity(uint8_t i); // i in [0..16]
+  void setIntensity(uint8_t i); // i in [0..16]
   void erase() { printText(" ");} 
 
 private: 
@@ -96,9 +96,17 @@ private:
   mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
 }
 
-//void jtext::setintensity(uint8_t i) // i in [0..16]
-//{    
-  //mx.control(MD_MAX72XX::INTENSITY, i);
-  //mx.control(MD_MAX72XX::UPDATE, MD_MAX72XX::ON);
-//}
+void jtext::setIntensity(uint8_t i) // i in [0..16]
+{ 
+  static uint8_t prev = MAX_INTENSITY/2;
+  if (i<0) i=0;
+  if (i>MAX_INTENSITY) i=MAX_INTENSITY;
+  
+  if (i==prev)
+    return;
+     
+  mx.control(MD_MAX72XX::INTENSITY, i);
+ 
+  prev = i;
+}
 

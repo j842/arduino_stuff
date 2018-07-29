@@ -56,8 +56,8 @@ class jtimer
 
     void dim()
     {
-      show(0);
-      
+      mText->setIntensity(0);
+      mText->printText("Zzzzz");
       mDimTime=0;
     }
 
@@ -109,6 +109,7 @@ class jtimer
         s += String(secs);
         s += "s";
       }
+      mText->setIntensity(8);
       mText->printText(s.c_str());
     }
 
