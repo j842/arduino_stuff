@@ -63,9 +63,12 @@ class jtimer
 
     void loop_notrunning()
     {
-      uint32_t s = 1 + (uint32_t)(mPot->getval())*mMaxSecs/10/1024; // 120 secs max. Round to nearest 10s.
-      s=s*10;
-      if (s>mMaxSecs) s=mMaxSecs;
+      // 1024 total. [0,12] -> 1,   [1012,1024] -> 1000
+      uint32_t s0 = (uint32_t)(mPot->getval()) - 5;
+      if (s0<1) s0=1;
+      if (s0>1000) s0=1000;
+      uint32_t s = s0*mMaxSecs/1000; // 120 secs max. Round to nearest 10s.
+      s=(s/10)*10;
 
       if (s!=mTimeSecs)
        {
