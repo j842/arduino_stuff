@@ -65,6 +65,22 @@ void setup()
   ledOff(LED_RED);
 }
 
+void cool()
+{
+  for (int i=0;i<10;i++)
+  {
+    ledOn(LED_BLUE);
+    ledOff(LED_RED);
+    delay(100);
+    ledOff(LED_BLUE);
+    ledOn(LED_RED);
+    delay(100);
+  }  
+  ledOn(LED_BLUE);
+  delay(500);
+  ledOff(LED_RED);
+}
+
 
 void loop()
 {
@@ -89,6 +105,8 @@ void loop()
       ledOn(LED_RED);
     else if (tolower(ReceivedMessage[0]=='b'))
       ledOn(LED_BLUE);
+    else if (tolower(ReceivedMessage[0]=='c'))
+      cool();
 
     // send back a reply, to the IP address and port we got the packet from
     Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
