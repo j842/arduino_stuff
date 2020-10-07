@@ -5,7 +5,7 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>
 #include <WiFiUdp.h>
-#include "../../common/bufferbuddy.h"
+#include "../../common/udpbro.h"
 
 /*
 
@@ -17,7 +17,7 @@ test from linux with:   nc -u 10.10.10.200 9999
 
 */
 
-bufferbuddy bb;
+udpbro bb;
 
 
 // based on guide here:

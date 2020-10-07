@@ -5,7 +5,7 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>
 #include <WiFiUdp.h>
-#include "../../common/bufferbuddy.h"
+#include "../../common/udpbro.h"
 
 /*
 Built with PlatformIO in Visual Studio Code.
@@ -16,7 +16,7 @@ test from linux with:   nc -u 10.10.10.200 9999
 
 */
 
-bufferbuddy bb;
+udpbro bb;
 
 // based on guide here:
 // https://medium.com/@loginov_rocks/quick-start-with-nodemcu-v3-esp8266-arduino-ecosystem-and-platformio-ide-b8415bf9a038
