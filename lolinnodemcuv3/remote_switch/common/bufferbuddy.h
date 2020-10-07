@@ -3,12 +3,11 @@
 
 #include <WiFiUdp.h>
 
-class bufferbuddy 
+class udpbro 
 {
     public:
-        bufferbuddy() 
+        udpbro() 
         {
-            ReceivedMessage[0]=0;
         }
 
         bool setup() 
@@ -25,41 +24,72 @@ class bufferbuddy
 
         bool loop() 
         {
-              int packetSize = Udp.parsePacket();
-              if (packetSize<=0)
-                  return false;
-                Serial.printf("Received %d byte message from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
+            int packetSize = Udp.parsePacket();
+            if (packetSize<=0)
+                return false;
 
-                // receive incoming UDP message
-                int len = Udp.read(ReceivedMessage, 255);
-                if (len > 0)
+            Serial.printf("Received %d byte message from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
+
+            return true;
+        }
+
+        std::string getString() 
+        {
+            char ReceivedMessage[255];  // buffer for incoming packets
+            int len = getBytes((uint8_t *)(&ReceivedMessage[0]),255);
+            if (len > 0)
                 {
                 ReceivedMessage[len] = 0;
                 if (ReceivedMessage[len-1]=='\n')
                     ReceivedMessage[len-1]=0;
                 }
-                Serial.printf("UDP message: %s\n", ReceivedMessage);
-                return true;
+            else
+                    ReceivedMessage[0]=0;
+                
+            Serial.printf("UDP message: \"%s\"\n", ReceivedMessage);
+            std::string s(ReceivedMessage);
+            return s;
         }
 
-        const char * getMessage() 
+
+        bool sendString(std::string msg, const char *host, uint16_t port)
         {
-            return ReceivedMessage;
+            bool okay = sendBytes((uint8_t *)(msg.c_str()),msg.length(),host,port);
+            if (okay) 
+                Serial.printf("Sent: \"%s\"\n",msg.c_str());
+            else
+                Serial.printf("Failed to send: \"%s\"\n",msg.c_str());
+            
+            return okay;
         }
 
-        bool sendMessage(std::string msg, const char *host, uint16_t port)
+        int getBytes(uint8_t * bytes, size_t maxlen)
+        {
+            return Udp.read(bytes, maxlen);
+        }
+
+        bool sendBytes(uint8_t * bytes, size_t len, const char *host, uint16_t port)
         {
             Udp.beginPacket(host,port);
-            Udp.write(msg.c_str());
+            size_t bytesWritten = Udp.write(bytes,len);
             Udp.endPacket();
-            return true;
+
+            return (bytesWritten==len);
         }
 
     private:
         WiFiUDP Udp;
-
         const unsigned int localUdpPort = 9999;  // local port to listen on 
-        char ReceivedMessage[255];  // buffer for incoming packets
+};
+
+
+class bufferbuddy : public udpbro
+{
+    public:
+        bufferbuddy() : udpbro() 
+        {
+        }
+
 };
 
 #endif

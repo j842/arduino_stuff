@@ -83,7 +83,7 @@ void loop()
     ledOff(LED_RED);
     // receive incoming UDP message
 
-    std::string ReceivedMessage( bb.getMessage() );
+    std::string ReceivedMessage( bb.getString() );
     Serial.printf("UDP message: %s\n", ReceivedMessage.c_str());
 
     if (tolower(ReceivedMessage[0])=='r')

@@ -62,7 +62,7 @@ void loop()
 {
   if (!alreadydone)
   {
-    bb.sendMessage("cool","10.10.10.200",9999);
+    bb.sendString("cool","10.10.10.200",9999);
     alreadydone=true;
   }
 
