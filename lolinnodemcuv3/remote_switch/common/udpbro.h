@@ -63,7 +63,7 @@ class udpbro
             return okay;
         }
 
-        int getBytes(uint8_t * bytes, size_t maxlen)
+        size_t getBytes(uint8_t * bytes, size_t maxlen)
         {
             return Udp.read(bytes, maxlen);
         }
@@ -83,13 +83,45 @@ class udpbro
 };
 
 
-class bufferbuddy : public udpbro
+typedef enum 
+{
+    kNone = 0,
+    kMessage = 1,    
+} tbufbuf;
+
+class bufbuf 
 {
     public:
-        bufferbuddy() : udpbro() 
+        bufbuf() 
         {
         }
+        bufbuf(std::string s)
+        {
+            _set(kMessage, s.length(), s.c_str());
+        } 
 
+        uint8_t _set(uint8_t type, uint8_t len, uint8_t * Payload)
+        {
+            mBytes[0]=type;
+            mBytes[1]=std::min(len,kMaxLen-2);
+            for (uint8_t i=0;i<mBytes[1];++i)
+                mBytes[2+i]=Payload[i];
+            return mBytes[1];
+        }
+
+        bool _get(uint8_t & type, uint8_t & len, uint8_t * Payload, uint8_t maxlen)
+        {
+            
+        }
+
+        uint8_t getBytes(uint8_t * bytes, uint8_t maxlen)
+        {
+            if (maxlen<)
+        }
+
+    private:
+        const uint8_t kMaxLen = 255;
+        uint8_t mBytes[mMaxLen];
 };
 
 #endif
