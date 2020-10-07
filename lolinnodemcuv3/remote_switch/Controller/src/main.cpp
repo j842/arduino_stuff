@@ -5,6 +5,7 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>
 #include <WiFiUdp.h>
+#include "../../common/bufferbuddy.h"
 
 /*
 
@@ -14,10 +15,7 @@ test from linux with:   nc -u 10.10.10.200 9999
 
 */
 
-WiFiUDP Udp;
-unsigned int localUdpPort = 9999;  // local port to listen on 
-char ReceivedMessage[255];  // buffer for incoming packets
-
+bufferbuddy bb;
 
 // based on guide here:
 // https://medium.com/@loginov_rocks/quick-start-with-nodemcu-v3-esp8266-arduino-ecosystem-and-platformio-ide-b8415bf9a038
@@ -52,16 +50,8 @@ void setup()
   wifiManager.autoConnect("NodeMCU Setup");
   Serial.println("WiFi Connected!");
 
-  int rval = Udp.begin(localUdpPort);
-  if (rval==1)
-  {
-    Serial.printf("Up and running on IP %s\n", WiFi.localIP().toString().c_str());
-  }
-  else
-  {
-    Serial.printf("Failed to open UDP port %d\n",localUdpPort);
+  if (!bb.setup())
     exit(-1);
-  }
 
   flashit();
 }
@@ -72,44 +62,8 @@ void loop()
 {
   if (!alreadydone)
   {
-    Serial.printf("Telling 10.10.10.200 to be cool.\n");
-    Udp.beginPacket("10.10.10.200",9999);
-    std::string msg="cool";
-    Udp.write(msg.c_str());
-    Udp.endPacket();
+    bb.sendMessage("cool","10.10.10.200",9999);
     alreadydone=true;
   }
-
-  // int packetSize = Udp.parsePacket();
-
-  // if (packetSize>0)
-  // {
-  //   ledOff(LED_BLUE);
-  //   ledOff(LED_RED);
-  //   // receive incoming UDP message
-  //   Serial.printf("Received %d message from %s, port %d\n", packetSize, Udp.remoteIP().toString().c_str(), Udp.remotePort());
-  //   int len = Udp.read(ReceivedMessage, 255);
-  //   if (len > 0)
-  //   {
-  //     ReceivedMessage[len] = 0;
-  //     if (ReceivedMessage[len-1]=='\n')
-  //       ReceivedMessage[len-1]=0;
-  //   }
-  //   Serial.printf("UDP message: %s\n", ReceivedMessage);
-
-  //   if (tolower(ReceivedMessage[0])=='r')
-  //     ledOn(LED_RED);
-  //   else if (tolower(ReceivedMessage[0]=='b'))
-  //     ledOn(LED_BLUE);
-  //   else if (tolower(ReceivedMessage[0]=='c'))
-  //     cool();
-
-  //   // send back a reply, to the IP address and port we got the packet from
-  //   Udp.beginPacket(Udp.remoteIP(), Udp.remotePort());
-  //   std::string response;
-  //   response="Recieved: \""+std::string(ReceivedMessage)+"\"\n";
-  //   Udp.write(response.c_str());
-  //   Udp.endPacket();
-  // }
 
 }
