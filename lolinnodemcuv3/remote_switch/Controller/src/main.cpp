@@ -5,7 +5,7 @@
 #include <ESP8266WebServer.h>
 #include <WiFiManager.h>
 #include <WiFiUdp.h>
-#include "../../common/udpbro.h"
+#include <udpbro.h>
 
 /*
 Built with PlatformIO in Visual Studio Code.
@@ -16,7 +16,7 @@ test from linux with:   nc -u 10.10.10.200 9999
 
 */
 
-udpbro bb;
+udpbro udp;
 
 // based on guide here:
 // https://medium.com/@loginov_rocks/quick-start-with-nodemcu-v3-esp8266-arduino-ecosystem-and-platformio-ide-b8415bf9a038
@@ -51,7 +51,7 @@ void setup()
   wifiManager.autoConnect("NodeMCU Setup");
   Serial.println("WiFi Connected!");
 
-  if (!bb.setup())
+  if (!udp.setup())
     exit(-1);
 
   flashit();
@@ -63,7 +63,9 @@ void loop()
 {
   if (!alreadydone)
   {
-    bb.sendString("cool","10.10.10.200",9999);
+    buf b;
+    b.setString(kMessage,"cool");
+    udp.send(b,IPAddress(10,10,10,200),9999);
     alreadydone=true;
   }
 

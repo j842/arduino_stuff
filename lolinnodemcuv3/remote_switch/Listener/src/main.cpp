@@ -17,7 +17,7 @@ test from linux with:   nc -u 10.10.10.200 9999
 
 */
 
-udpbro bb;
+udpbro udp;
 
 
 // based on guide here:
@@ -49,7 +49,7 @@ void setup()
   wifiManager.autoConnect("NodeMCU Setup");
   Serial.println("WiFi Connected!");
 
-  if (!bb.setup())
+  if (!udp.setup())
     {
       ledOn(LED_RED);
       exit(-1);
@@ -79,13 +79,15 @@ void cool()
 
 void loop()
 {
-  if (bb.loop())
+  if (udp.loop())
   {
     ledOff(LED_BLUE);
     ledOff(LED_RED);
     // receive incoming UDP message
 
-    std::string ReceivedMessage( bb.getString() );
+    const buf & b( udp.getBuf());
+
+    std::string ReceivedMessage( b.getString() );
     Serial.printf("UDP message: %s\n", ReceivedMessage.c_str());
 
     if (tolower(ReceivedMessage[0])=='r')
