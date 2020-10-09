@@ -1,9 +1,10 @@
 #ifndef __BUFFERBUDDY_H
 #define __BUFFERBUDDY_H
 
-#include <bufbuf.h>
+#include <buf.h>
 #include <WiFiUdp.h>
 
+// thin wrapper on WiFiUDP.
 class udpbro 
 {
     public:
