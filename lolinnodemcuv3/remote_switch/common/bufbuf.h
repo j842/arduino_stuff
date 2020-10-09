@@ -45,7 +45,6 @@ class buf
 
     void clear()
     {
-        mLen=3;
         setID(kNone);
         setPayloadType(kNoPayload);
         setPayloadLen(0);
@@ -106,7 +105,12 @@ class buf
     void setPayloadType(tPayloadType t) {mBytes[1]=static_cast<uint8_t>(t);}
     
     uint8_t getPayloadLen() const {return mBytes[2];}
-    void setPayloadLen(uint8_t l) {assert(l<=kMaxPayloadLen); mBytes[2]=l;}
+    void setPayloadLen(uint8_t l) 
+    {
+        assert(l<=kMaxPayloadLen); 
+        mBytes[2]=l;
+        _setLen(l+kHeaderLen);
+    }
 
     uint8_t _getLen() const {return mLen;}
     void _setLen(uint8_t len) {mLen = len;}
