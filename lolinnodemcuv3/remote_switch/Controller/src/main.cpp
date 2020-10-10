@@ -6,6 +6,7 @@
 #include <WiFiManager.h>
 #include <WiFiUdp.h>
 #include <udpbro.h>
+#include <jbuzzer.h>
 
 /*
 Built with PlatformIO in Visual Studio Code.
@@ -17,6 +18,8 @@ test from linux with:   nc -u 10.10.10.200 9999
 */
 
 udpbro udp;
+
+jbuzzer jbuz(D0);
 
 // based on guide here:
 // https://medium.com/@loginov_rocks/quick-start-with-nodemcu-v3-esp8266-arduino-ecosystem-and-platformio-ide-b8415bf9a038
@@ -54,6 +57,8 @@ void setup()
   if (!udp.setup())
     exit(-1);
 
+  jbuz.setup();
+
   flashit();
 }
 
@@ -63,10 +68,13 @@ void loop()
 {
   if (!alreadydone)
   {
-    buf b;
-    b.setString(kMessage,"cool");
-    udp.send(b,IPAddress(10,10,10,200),9999);
-    alreadydone=true;
+    jbuz.playsong(1);
+    // buf b;
+    // b.setString(kMessage,"cool");
+    // udp.send(b,IPAddress(10,10,10,200),9999);
+    // alreadydone=true;
   }
 
+
+  jbuz.loop();
 }
