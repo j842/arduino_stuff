@@ -106,8 +106,6 @@ class jbuzzer
   public:
     jbuzzer(int buzzerPin) : mBuzzerPin(buzzerPin) { finish(); }
 
-    void setup() {}
-
     void playnote(int freq, int dur)
     {
       note =0;
@@ -165,10 +163,15 @@ class jbuzzer
 
     #ifdef __NOTONE
     #define ledChannel 0
-    void starttone(int pin, unsigned int frequency, unsigned long duration)
+    void customsetup()
+    {
+      int freq = 2000;
+      int resolution = 8;
+      ledcSetup(ledChannel, freq, resolution);
+      ledcAttachPin(mBuzzerPin, ledChannel);
+    }
+    void starttone(unsigned int frequency, unsigned long duration)
     {  // https://community.platformio.org/t/tone-not-working-on-espressif32-platform/7587/2
-        ledcSetup(ledChannel, 5000, 8);
-        ledcAttachPin(pin, ledChannel);
         ledcWriteTone(ledChannel, frequency);
     }
     void stoptone()
@@ -176,14 +179,23 @@ class jbuzzer
         ledcWriteTone(ledChannel, 0);
     }
     #else
-    void starttone(int pin, unsigned int frequency, unsigned long duration)
+    void starttone(unsigned int frequency, unsigned long duration)
     {
-      tone(pin,frequency,duration);
+      tone(mBuzzerPin,frequency,duration);
     }
     void stoptone()
     {
     }
+    void customsetup()
+    {
+    }
     #endif
+
+    void setup() 
+    {
+      customsetup();
+    }
+
 
     void loop()
     {
@@ -199,9 +211,9 @@ class jbuzzer
 //            Serial.print(noteDuration);
 //            Serial.print("\t");
 //            Serial.println(*melody);
-            starttone(mBuzzerPin, (*melody), noteDuration);
+            starttone((*melody), noteDuration);
             //pause for the note's duration plus 30 ms:
-            waitto = millis()+noteDuration;//+30;
+            waitto = millis()+noteDuration+30;
 
             ++melody;
             ++tempo;

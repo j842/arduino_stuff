@@ -27,7 +27,7 @@ test from linux with:   nc -u 10.10.10.200 9999
 
 udpbro udp;
 
-jbuzzer jbuz(23);
+jbuzzer jbuz(16);
 
 // based on guide here:
 // https://medium.com/@loginov_rocks/quick-start-with-nodemcu-v3-esp8266-arduino-ecosystem-and-platformio-ide-b8415bf9a038
@@ -94,7 +94,7 @@ void loop()
     // buf b;
     // b.setString(kMessage,"cool");
     // udp.send(b,IPAddress(10,10,10,200),9999);
-    // alreadydone=true;
+    alreadydone=true;
   }
 
 
