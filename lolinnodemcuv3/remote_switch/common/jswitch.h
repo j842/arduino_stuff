@@ -16,9 +16,9 @@ class jswitch
       pinMode(mPin, INPUT_PULLUP); 
     }
 
-    bool changed_since_last_read()
+    bool changed_since_last_read() const
     {
-      return ready() && (_ison()!=mIsOn);
+      return (mLastChange==0) || (ready() && (_ison()!=mIsOn));
     }
     
     bool ison() { 
@@ -31,12 +31,12 @@ class jswitch
       return mIsOn;
     }
 
-    bool ready() {
+    bool ready() const {
       return (millis()-mLastChange)>DEBOUNCE_MS;
     }
 
   private:
-    bool _ison()
+    bool _ison() const
     {
         return (digitalRead(mPin)==LOW);
     }

@@ -26,7 +26,7 @@ http:10.10.10.200/update to update firmware.
 */
 
 udpbro udp;
-jwifiota wifiota("ESP32 Controller, Version 0.07");
+jwifiota wifiota("ESP32 Controller, Version 0.09");
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
 std::vector<jswitch> gSwitches;
@@ -49,8 +49,8 @@ void setup()
   gOnLeds.push_back(jled(19));
 
   gOffLeds.push_back(jled(21));
-  gOffLeds.push_back(jled(3));
-  gOffLeds.push_back(jled(1));
+  gOffLeds.push_back(jled(13));
+  gOffLeds.push_back(jled(14));
   gOffLeds.push_back(jled(22));
   gOffLeds.push_back(jled(23));
 
@@ -85,16 +85,48 @@ void loop()
     alreadydone=true;
   }
 
-  for (int i=0;i<gSwitches.size();++i)
-    if (gSwitches[i].changed_since_last_read())
-    {
-      bool on = gSwitches[i].ison();
-      jbuz.playsong(on ? 6 : 7);
+  if (gSwitches[0].changed_since_last_read())
+  {
+    bool on = gSwitches[0].ison();
+    gOnLeds[0].seton(on);
+    gOffLeds[0].seton(!on); 
 
-      gOnLeds[i].seton(on);
-      gOffLeds[i].seton(!on);      
+    if (on)
+    {   
+      for (int i=1;i<gOnLeds.size();++i)
+      {
+          gOnLeds[i].seton(gSwitches[i].ison());
+          gOffLeds[i].seton(!gSwitches[i].ison());
+      }
+    } else {
+      for (int i=1;i<gOnLeds.size();++i)
+        {
+          gOnLeds[i].seton(false);
+          gOffLeds[i].seton(false);
+        }
+      jbuz.playsong(4);
     }
-   
+  }
+
+  if (gSwitches[0].ison())
+  {
+    int toplay=0;
+    for (int i=1;i<gSwitches.size();++i)
+      if (gSwitches[i].changed_since_last_read())
+      {
+        bool on = gSwitches[i].ison();
+        if (!on && toplay==0)
+          toplay=7;
+        else
+          toplay=6;
+        
+        gOnLeds[i].seton(on);
+        gOffLeds[i].seton(!on);      
+      }
+    if (toplay>0)
+      jbuz.playsong(toplay);
+  }
+
   jbuz.loop();
   wifiota.loop();
 }
