@@ -1,8 +1,6 @@
 #ifndef __WIFISETUP
 #define __WIFISETUP
 
-#include <WiFi.h>
-
 #include "/credentials/wificred.h"
 // format of the wificred.h file is:
 // const char* myssid = "ssid";

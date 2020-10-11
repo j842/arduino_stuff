@@ -1,23 +1,23 @@
 #include <Arduino.h>
 
 #include <ESP8266WiFi.h>
-#include <DNSServer.h>
-#include <ESP8266WebServer.h>
-#include <WiFiManager.h>
+//#include <DNSServer.h>
+//#include <ESP8266WebServer.h>
+//#include <WiFiManager.h>
 #include <WiFiUdp.h>
-#include "../../common/udpbro.h"
+
+#include <udpbro.h>
+#include <jwifiota.h>
 
 /*
 
 Built with PlatformIO in Visual Studio Code.
 
-UDP Server. 10.10.10.200
-
-test from linux with:   nc -u 10.10.10.200 9999
-
 */
 
 udpbro udp;
+jwifiota wifiota("ESP8266 Auxiliary, Version 0.01");
+
 
 
 // based on guide here:
@@ -39,62 +39,40 @@ void ledOff(uint8_t LED)
 
 void setup()
 { // connect via wifi to set up credentials (temporarily creates an access point to connect to)
-  pinMode(LED_RED, OUTPUT);
-  pinMode(LED_BLUE, OUTPUT);
+  // pinMode(LED_RED, OUTPUT);
+  // pinMode(LED_BLUE, OUTPUT);
 
-  ledOn(LED_RED);
+  // ledOn(LED_RED);
 
   Serial.begin(115200);
-  WiFiManager wifiManager;
-  wifiManager.autoConnect("NodeMCU Setup");
-  Serial.println("WiFi Connected!");
+  // WiFiManager wifiManager;
+  // wifiManager.autoConnect("NodeMCU Setup");
+  // Serial.println("WiFi Connected!");
+
+  wifiota.setup();
+
 
   if (!udp.setup())
-    {
-      ledOn(LED_RED);
       exit(-1);
-    }
 
-  ledOn(LED_BLUE);
-  delay(1000);
-  ledOff(LED_RED);
 }
-
-void cool()
-{
-  for (int i=0;i<10;i++)
-  {
-    ledOn(LED_BLUE);
-    ledOff(LED_RED);
-    delay(100);
-    ledOff(LED_BLUE);
-    ledOn(LED_RED);
-    delay(100);
-  }  
-  ledOn(LED_BLUE);
-  delay(500);
-  ledOff(LED_RED);
-}
-
 
 void loop()
 {
-  if (udp.loop())
+  if (udp.loop()) // has UDP received packet.
   {
-    ledOff(LED_BLUE);
-    ledOff(LED_RED);
-    // receive incoming UDP message
-
     const buf & b( udp.getBuf());
 
     std::string ReceivedMessage( b.getString() );
     Serial.printf("UDP message: %s\n", ReceivedMessage.c_str());
 
-    if (tolower(ReceivedMessage[0])=='r')
-      ledOn(LED_RED);
-    else if (tolower(ReceivedMessage[0]=='b'))
-      ledOn(LED_BLUE);
-    else if (tolower(ReceivedMessage[0]=='c'))
-      cool();
+    // if (tolower(ReceivedMessage[0])=='r')
+    //   ledOn(LED_RED);
+    // else if (tolower(ReceivedMessage[0]=='b'))
+    //   ledOn(LED_BLUE);
+    // else if (tolower(ReceivedMessage[0]=='c'))
+    //   cool();
   }
+
+  wifiota.loop();
 }
