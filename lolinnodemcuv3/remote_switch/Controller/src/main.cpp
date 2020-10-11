@@ -26,7 +26,7 @@ http:10.10.10.200/update to update firmware.
 */
 
 udpbro udp;
-jwifiota wifiota("ESP32 Controller, Version 0.09");
+jwifiota wifiota("ESP32 Controller, Version 0.11");
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
 std::vector<jswitch> gSwitches;
@@ -36,6 +36,8 @@ std::vector<jled> gOffLeds;
 
 void setup()
 {
+  Serial.begin(115200);
+
   gSwitches.push_back(jswitch(27)); 
   gSwitches.push_back(jswitch(26)); 
   gSwitches.push_back(jswitch(25)); 
@@ -55,14 +57,9 @@ void setup()
   gOffLeds.push_back(jled(23));
 
 
-  for (int i=0;i<gSwitches.size();++i)
-    gSwitches[i].setup();
-  for (int i=0;i<gOnLeds.size();++i)
-    gOnLeds[i].setup();
-  for (int i=0;i<gOffLeds.size();++i)
-    gOffLeds[i].setup();
-
-  Serial.begin(115200);
+  for (auto & s: gSwitches) s.setup();
+  for (auto & l: gOnLeds) l.setup();
+  for (auto & l: gOffLeds) l.setup();
 
   wifiota.setup();
 
@@ -74,20 +71,20 @@ void setup()
 
 static bool alreadydone=false;
 
-void loop()
-{
-  if (!alreadydone)
-  {
-    jbuz.playsong(1);
-    // buf b;
-    // b.setString(kMessage,"cool");
-    // udp.send(b,IPAddress(10,10,10,200),9999);
-    alreadydone=true;
-  }
+unsigned long mFadeOff;
+static const int kFadeOffTime=3000; // 3 seconds.
 
-  if (gSwitches[0].changed_since_last_read())
+void handleSwitches()
+{
+  for (auto & s: gSwitches) s.loop();
+  for (auto & l: gOnLeds) l.loop();
+  for (auto & l: gOffLeds) l.loop();
+
+  auto & bossmain = gSwitches[0];
+    
+  if (bossmain.changed_since_last_read())
   {
-    bool on = gSwitches[0].ison();
+    bool on = bossmain.ison();
     gOnLeds[0].seton(on);
     gOffLeds[0].seton(!on); 
 
@@ -99,6 +96,7 @@ void loop()
           gOffLeds[i].seton(!gSwitches[i].ison());
       }
     } else {
+      mFadeOff = millis()+kFadeOffTime; // turn off after a bnit.
       for (int i=1;i<gOnLeds.size();++i)
         {
           gOnLeds[i].seton(false);
@@ -108,7 +106,7 @@ void loop()
     }
   }
 
-  if (gSwitches[0].ison())
+  if (bossmain.ison())
   {
     int toplay=0;
     for (int i=1;i<gSwitches.size();++i)
@@ -125,7 +123,30 @@ void loop()
       }
     if (toplay>0)
       jbuz.playsong(toplay);
+  } 
+  else
+  { // bossmain off.
+    if (mFadeOff>0 && millis()>mFadeOff)
+    {
+      gOffLeds[0].seton(false); // shhh.
+      mFadeOff=0;
+    }
   }
+}
+
+
+void loop()
+{
+  if (!alreadydone)
+  {
+    jbuz.playsong(1);
+    // buf b;
+    // b.setString(kMessage,"cool");
+    // udp.send(b,IPAddress(10,10,10,200),9999);
+    alreadydone=true;
+  }
+
+  handleSwitches();
 
   jbuz.loop();
   wifiota.loop();
