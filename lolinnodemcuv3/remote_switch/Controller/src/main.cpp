@@ -1,10 +1,15 @@
 #include <Arduino.h>
 
+#include <FS.h>
+#include <Update.h>
+
 #include <WiFi.h>
 #include <WiFiUdp.h>
+
 #include <udpbro.h>
 #include <jbuzzer.h>
-#include <wifisetup.h>
+#include <jwifiota.h>
+
 
 /*
 Built with PlatformIO in Visual Studio Code.
@@ -16,14 +21,15 @@ test from linux with:   nc -u 10.10.10.200 9999
 */
 
 udpbro udp;
-
+jwifiota wifiota;
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
 void setup()
 { 
   Serial.begin(115200);
 
-  wifisetup();
+  wifiota.setup();
+
   if (!udp.setup())
     exit(-1);
 
@@ -43,6 +49,6 @@ void loop()
     alreadydone=true;
   }
 
-
   jbuz.loop();
+  wifiota.loop();
 }
