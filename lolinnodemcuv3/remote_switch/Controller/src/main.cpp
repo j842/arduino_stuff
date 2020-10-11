@@ -26,7 +26,7 @@ http:10.10.10.200/update to update firmware.
 */
 
 udpbro udp;
-jwifiota wifiota("ESP32 Controller, Version 0.11");
+jwifiota wifiota("ESP32 Controller, Version 0.12");
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
 std::vector<jswitch> gSwitches;
@@ -69,16 +69,89 @@ void setup()
   jbuz.setup();
 }
 
-static bool alreadydone=false;
+typedef enum {
+  ff_NotRunning,
+  ff_RunningFlashy,
+  ff_RunningFadeBossMain
+} tffstate;
 
-unsigned long mFadeOff;
-static const int kFadeOffTime=3000; // 3 seconds.
+// make turning the bossmain switch on or off fancy :-)
+class flashfun
+{
+  public:
+    flashfun() : mState(ff_NotRunning),mNdx(0),mNextTime(0) {}
+    
+    void start(bool bossmainOn)
+    {
+      for (auto & l: gOnLeds) l.seton(false);
+      for (auto & l: gOffLeds) l.seton(false);
+      mNdx=0;
+      if (bossmainOn)
+      {
+        mState=ff_RunningFlashy;
+        gOnLeds[0].seton(true);
+        mNextTime=millis()+kNextTime;
+      }
+      else
+      {
+        mState=ff_RunningFadeBossMain;
+        gOffLeds[0].seton(true);
+        mNextTime=millis()+kFadeOffTime;
+        jbuz.playsong(4);
+      }
+    }
+
+    void loop()
+    {
+      if (mState==ff_NotRunning || (millis()<mNextTime)) return;
+
+      if (mState==ff_RunningFadeBossMain)
+      { // finish up
+        mState=ff_NotRunning;
+        gOffLeds[0].seton(false); // ssh.
+        return;
+      }
+
+      // flashyfun
+      getLED().seton(false);
+      mNdx++;
+      if (mNdx<10)
+      {
+        getLED().seton(true);
+        mNextTime=millis()+kNextTime;
+      }
+      else
+      { // all done, set to correct values.
+        mState=ff_NotRunning;
+        for (int i=0;i<gSwitches.size();++i)
+        {
+          gOnLeds[i].seton(gSwitches[i].ison());
+          gOffLeds[i].seton(!gSwitches[i].ison());
+        }
+      }
+    }
+
+    tffstate state() {return mState;}
+    jled & getLED() {if (mNdx<5) return gOnLeds[mNdx]; else return gOffLeds[9-mNdx];}
+  private:
+    tffstate mState;
+    int mNdx;
+    unsigned long mNextTime;
+    static const int kFadeOffTime=3000; // 3 seconds.
+    static const int kNextTime=100; // 100 milliseconds.
+};
+
+flashfun ff;
+
+static bool alreadydone=false;
 
 void handleSwitches()
 {
   for (auto & s: gSwitches) s.loop();
   for (auto & l: gOnLeds) l.loop();
   for (auto & l: gOffLeds) l.loop();
+
+  ff.loop();
 
   auto & bossmain = gSwitches[0];
     
@@ -89,24 +162,12 @@ void handleSwitches()
     gOffLeds[0].seton(!on); 
 
     if (on)
-    {   
-      for (int i=1;i<gOnLeds.size();++i)
-      {
-          gOnLeds[i].seton(gSwitches[i].ison());
-          gOffLeds[i].seton(!gSwitches[i].ison());
-      }
-    } else {
-      mFadeOff = millis()+kFadeOffTime; // turn off after a bnit.
-      for (int i=1;i<gOnLeds.size();++i)
-        {
-          gOnLeds[i].seton(false);
-          gOffLeds[i].seton(false);
-        }
-      jbuz.playsong(4);
-    }
+      ff.start(true);
+    else
+      ff.start(false);
   }
 
-  if (bossmain.ison())
+  if (bossmain.ison() && ff.state()==ff_NotRunning)
   {
     int toplay=0;
     for (int i=1;i<gSwitches.size();++i)
@@ -124,14 +185,6 @@ void handleSwitches()
     if (toplay>0)
       jbuz.playsong(toplay);
   } 
-  else
-  { // bossmain off.
-    if (mFadeOff>0 && millis()>mFadeOff)
-    {
-      gOffLeds[0].seton(false); // shhh.
-      mFadeOff=0;
-    }
-  }
 }
 
 
