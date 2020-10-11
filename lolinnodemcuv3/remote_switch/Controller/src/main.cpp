@@ -14,14 +14,18 @@
 /*
 Built with PlatformIO in Visual Studio Code.
 
+Switches on and off Tom's auxiliary systems.
+
 UDP Server. 10.10.10.200
 
-test from linux with:   nc -u 10.10.10.200 9999
+Uses AsyncElegantOTA.
+Visit http:10.10.10.200 for current version.
+http:10.10.10.200/update to update firmware.
 
 */
 
 udpbro udp;
-jwifiota wifiota;
+jwifiota wifiota("ESP32 Controller, Version 0.01");
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
 void setup()
@@ -42,7 +46,7 @@ void loop()
 {
   if (!alreadydone)
   {
-    jbuz.playsong(1);
+    jbuz.playsong(3);
     // buf b;
     // b.setString(kMessage,"cool");
     // udp.send(b,IPAddress(10,10,10,200),9999);

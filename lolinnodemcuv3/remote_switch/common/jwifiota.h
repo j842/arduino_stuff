@@ -8,11 +8,16 @@
 
 #include <AsyncElegantOTA.h>
 
+static char serverMsg[255];
+
 
 class jwifiota : public jwifi
 {
     public:
-        jwifiota() : server(80) {}
+        jwifiota(std::string s) : mServer(80) 
+        {
+            strncpy(serverMsg,s.c_str(),255);
+        }
 
         void setup() 
         {
@@ -20,12 +25,12 @@ class jwifiota : public jwifi
 
             jwifi::setup();
 
-            server.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
-                request->send(200, "text/plain", "Hi! I am ESP32.");
+            mServer.on("/", HTTP_GET, [](AsyncWebServerRequest *request) {
+                request->send(200, "text/plain", serverMsg);
             });
 
-            AsyncElegantOTA.begin(&server);    // Start ElegantOTA
-            server.begin();
+            AsyncElegantOTA.begin(&mServer);    // Start ElegantOTA
+            mServer.begin();
             Serial.println("HTTP server started");
         }
 
@@ -37,7 +42,7 @@ class jwifiota : public jwifi
         }
 
 
-    AsyncWebServer server;
+    AsyncWebServer mServer;
 };
 
 #endif
