@@ -161,34 +161,34 @@ class jbuzzer
       }
     }
 
-    #ifdef __NOTONE
-    #define ledChannel 0
-    void customsetup()
-    {
-      int freq = 2000;
-      int resolution = 8;
-      ledcSetup(ledChannel, freq, resolution);
-      ledcAttachPin(mBuzzerPin, ledChannel);
-    }
-    void starttone(unsigned int frequency, unsigned long duration)
-    {  // https://community.platformio.org/t/tone-not-working-on-espressif32-platform/7587/2
-        ledcWriteTone(ledChannel, frequency);
-    }
-    void stoptone()
-    {
-        ledcWriteTone(ledChannel, 0);
-    }
+    #ifdef __USETONE
+      void starttone(unsigned int frequency, unsigned long duration)
+      {
+        tone(mBuzzerPin,frequency,duration);
+      }
+      void stoptone()
+      {
+      }
+      void customsetup()
+      {
+      }
     #else
-    void starttone(unsigned int frequency, unsigned long duration)
-    {
-      tone(mBuzzerPin,frequency,duration);
-    }
-    void stoptone()
-    {
-    }
-    void customsetup()
-    {
-    }
+      #define ledChannel 0
+      void customsetup()
+      {
+        int freq = 2000;
+        int resolution = 8;
+        ledcSetup(ledChannel, freq, resolution);
+        ledcAttachPin(mBuzzerPin, ledChannel);
+      }
+      void starttone(unsigned int frequency, unsigned long duration)
+      {  // https://community.platformio.org/t/tone-not-working-on-espressif32-platform/7587/2
+          ledcWriteTone(ledChannel, frequency);
+      }
+      void stoptone()
+      {
+          ledcWriteTone(ledChannel, 0);
+      }
     #endif
 
     void setup() 
