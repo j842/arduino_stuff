@@ -98,7 +98,11 @@ int tempo5[] = {     // note durations: 4 = quarter note, 8 = eighth note, etc.:
   4, 1, 4, 4, 4, 1, 4, 4, 2, 2, 8, 1, 8, 3, 2, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1 };
  
 
+int melody6[] = {NOTE_B3, NOTE_C5};
+int tempo6[] = {8,8};
 
+int melody7[] = {NOTE_C5, NOTE_B3};
+int tempo7[] = {8,8};
 
 
 class jbuzzer
@@ -156,6 +160,17 @@ class jbuzzer
           tempo = tempo5;
           len = sizeof(melody5) / sizeof(int);
           break;
+        case 6:
+          melody = melody6;
+          tempo = tempo6;
+          len = sizeof(melody6) / sizeof(int);
+          break;
+        case 7:
+          melody = melody7;
+          tempo = tempo7;
+          len = sizeof(melody7) / sizeof(int);
+          break;        
+          
         default:
           finish(); // play nothing.  
       }
