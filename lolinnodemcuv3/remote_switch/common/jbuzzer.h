@@ -9,175 +9,145 @@
 #ifndef __JBUZZER_H
 #define __JBUZZER_H
 
-
+#include <string>
 #include "pitches.h"
 
+class melody 
+{
+  public:
+    melody(std::string name, std::vector<int> notes, std::vector<int> tempos) :
+      mName(name), mNotes(notes), mTempo(tempos)
+    {
+    }
 
-// Jingle Bells
-
-int melody1[] = {
-  NOTE_E5, NOTE_E5, NOTE_E5,
-  NOTE_E5, NOTE_E5, NOTE_E5,
-  NOTE_E5, NOTE_G5, NOTE_C5, NOTE_D5,
-  NOTE_E5,
-  NOTE_F5, NOTE_F5, NOTE_F5, NOTE_F5,
-  NOTE_F5, NOTE_E5, NOTE_E5, NOTE_E5, NOTE_E5,
-  NOTE_E5, NOTE_D5, NOTE_D5, NOTE_E5,
-  NOTE_D5, NOTE_G5
+    std::string mName;
+    std::vector<int> mNotes;
+    std::vector<int> mTempo;
 };
 
-int tempo1[] = {
-  8, 8, 4,
-  8, 8, 4,
-  8, 8, 8, 8,
-  2,
-  8, 8, 8, 8,
-  8, 8, 8, 16, 16,
-  8, 8, 8, 8,
-  4, 4
-};
-
-// We wish you a merry Christmas
-
-int melody2[] = {
-  NOTE_B3, 
-  NOTE_F4, NOTE_F4, NOTE_G4, NOTE_F4, NOTE_E4,
-  NOTE_D4, NOTE_D4, NOTE_D4,
-  NOTE_G4, NOTE_G4, NOTE_A4, NOTE_G4, NOTE_F4,
-  NOTE_E4, NOTE_E4, NOTE_E4,
-  NOTE_A4, NOTE_A4, NOTE_B4, NOTE_A4, NOTE_G4,
-  NOTE_F4, NOTE_D4, NOTE_B3, NOTE_B3,
-  NOTE_D4, NOTE_G4, NOTE_E4,
-  NOTE_F4
-};
-
-int tempo2[] = {
-  4,
-  4, 8, 8, 8, 8,
-  4, 4, 4,
-  4, 8, 8, 8, 8,
-  4, 4, 4,
-  4, 8, 8, 8, 8,
-  4, 4, 8, 8,
-  4, 4, 4,
-  2
-};
-
-// Santa Claus is coming to town
-
-int melody3[] = {
-  NOTE_G4,
-  NOTE_E4, NOTE_F4, NOTE_G4, NOTE_G4, NOTE_G4,
-  NOTE_A4, NOTE_B4, NOTE_C5, NOTE_C5, NOTE_C5,
-  NOTE_E4, NOTE_F4, NOTE_G4, NOTE_G4, NOTE_G4,
-  NOTE_A4, NOTE_G4, NOTE_F4, NOTE_F4,
-  NOTE_E4, NOTE_G4, NOTE_C4, NOTE_E4,
-  NOTE_D4, NOTE_F4, NOTE_B3,
-  NOTE_C4
-};
-
-int tempo3[] = {
-  8,
-  8, 8, 4, 4, 4,
-  8, 8, 4, 4, 4,
-  8, 8, 4, 4, 4,
-  8, 8, 4, 2,
-  4, 4, 4, 4,
-  4, 2, 4,
-  1
-};
+std::vector<melody> Melodies;
 
 
-  int melody4[] = {
-  NOTE_C4, NOTE_G3,NOTE_G3, NOTE_GS3, NOTE_G3,0, NOTE_B3, NOTE_C4};
-  // note durations: 4 = quarter note, 8 = eighth note, etc.:
-  int tempo4[] = {
-    4, 8, 8, 4,4,4,4,4 
-  };
+void loadMelodies()
+{
+  Melodies.push_back(melody(
+    "Jingle Bells",
+    {   NOTE_E5, NOTE_E5, NOTE_E5,
+        NOTE_E5, NOTE_E5, NOTE_E5,
+        NOTE_E5, NOTE_G5, NOTE_C5, NOTE_D5,
+        NOTE_E5, NOTE_F5, NOTE_F5, NOTE_F5, NOTE_F5,
+        NOTE_F5, NOTE_E5, NOTE_E5, NOTE_E5, NOTE_E5,
+        NOTE_E5, NOTE_D5, NOTE_D5, NOTE_E5,
+        NOTE_D5, NOTE_G5
+    },
+    {
+      8, 8, 4,
+      8, 8, 4,
+      8, 8, 8, 8,
+      2,
+      8, 8, 8, 8,
+      8, 8, 8, 16, 16,
+      8, 8, 8, 8,
+      4, 4
+    }
+  ));
 
-int melody5[] = {                            // specific notes in the melody
- NOTE_B3, NOTE_C5, NOTE_B5, NOTE_D5, NOTE_A4, NOTE_B4, NOTE_B5, NOTE_G4, NOTE_B4, NOTE_D4, NOTE_C4, NOTE_B4, NOTE_C5, NOTE_B5, 0, NOTE_C5, NOTE_B5, NOTE_G4, NOTE_B5, NOTE_FS4, NOTE_G4, NOTE_A5, NOTE_B5, NOTE_G3, NOTE_D4, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_D4, NOTE_G3, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_G3, NOTE_B4, NOTE_A4, NOTE_C5, NOTE_B5, NOTE_G4, NOTE_B5, NOTE_FS4, NOTE_G4, NOTE_A5, NOTE_B5, NOTE_G3, NOTE_D4, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_D4, NOTE_G3, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_G3, NOTE_B4, NOTE_A4 };
- 
-int tempo5[] = {     // note durations: 4 = quarter note, 8 = eighth note, etc.:
-  4, 1, 4, 4, 4, 1, 4, 4, 2, 2, 8, 1, 8, 3, 2, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1 };
- 
+  Melodies.push_back(melody(
+    "We wish you a merry Christmas",
+    {
+      NOTE_B3, 
+      NOTE_F4, NOTE_F4, NOTE_G4, NOTE_F4, NOTE_E4,
+      NOTE_D4, NOTE_D4, NOTE_D4,
+      NOTE_G4, NOTE_G4, NOTE_A4, NOTE_G4, NOTE_F4,
+      NOTE_E4, NOTE_E4, NOTE_E4,
+      NOTE_A4, NOTE_A4, NOTE_B4, NOTE_A4, NOTE_G4,
+      NOTE_F4, NOTE_D4, NOTE_B3, NOTE_B3,
+      NOTE_D4, NOTE_G4, NOTE_E4,
+      NOTE_F4      
+    },
+    {
+      4,
+      4, 8, 8, 8, 8,
+      4, 4, 4,
+      4, 8, 8, 8, 8,
+      4, 4, 4,
+      4, 8, 8, 8, 8,
+      4, 4, 8, 8,
+      4, 4, 4,
+      2
+    }
+  ));
 
-int melody6[] = {NOTE_B3, NOTE_C5};
-int tempo6[] = {8,8};
+  Melodies.push_back(melody(
+    "Santa Claus is coming to town",
+    {
+      NOTE_G4,
+      NOTE_E4, NOTE_F4, NOTE_G4, NOTE_G4, NOTE_G4,
+      NOTE_A4, NOTE_B4, NOTE_C5, NOTE_C5, NOTE_C5,
+      NOTE_E4, NOTE_F4, NOTE_G4, NOTE_G4, NOTE_G4,
+      NOTE_A4, NOTE_G4, NOTE_F4, NOTE_F4,
+      NOTE_E4, NOTE_G4, NOTE_C4, NOTE_E4,
+      NOTE_D4, NOTE_F4, NOTE_B3,
+      NOTE_C4      
+    },
+    {
+      8,
+      8, 8, 4, 4, 4,
+      8, 8, 4, 4, 4,
+      8, 8, 4, 4, 4,
+      8, 8, 4, 2,
+      4, 4, 4, 4,
+      4, 2, 4,
+      1      
+    }
+  ));
 
-int melody7[] = {NOTE_C5, NOTE_B3};
-int tempo7[] = {8,8};
+  Melodies.push_back(melody(
+    "Death March",
+    {NOTE_C4, NOTE_G3,NOTE_G3, NOTE_GS3, NOTE_G3,0, NOTE_B3, NOTE_C4},
+    {4, 8, 8, 4,4,4,4,4}
+  ));
 
+  Melodies.push_back(melody(
+    "I forget what this is.",
+    {NOTE_B3, NOTE_C5, NOTE_B5, NOTE_D5, NOTE_A4, NOTE_B4, NOTE_B5, NOTE_G4, NOTE_B4, NOTE_D4, NOTE_C4, NOTE_B4, NOTE_C5, NOTE_B5, 0, NOTE_C5, NOTE_B5, NOTE_G4, NOTE_B5, NOTE_FS4, NOTE_G4, NOTE_A5, NOTE_B5, NOTE_G3, NOTE_D4, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_D4, NOTE_G3, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_G3, NOTE_B4, NOTE_A4, NOTE_C5, NOTE_B5, NOTE_G4, NOTE_B5, NOTE_FS4, NOTE_G4, NOTE_A5, NOTE_B5, NOTE_G3, NOTE_D4, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_D4, NOTE_G3, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_G3, NOTE_B4, NOTE_A4 },
+    {4, 1, 4, 4, 4, 1, 4, 4, 2, 2, 8, 1, 8, 3, 2, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1 }
+  ));
+
+  Melodies.push_back(melody(
+    "Boo Bee",
+    {NOTE_B3, NOTE_C5},
+    {8,8}
+  ));
+
+  Melodies.push_back(melody(
+    "Bee Boo",
+    {NOTE_C5, NOTE_B3},
+    {8,8}
+  ));
+}
 
 class jbuzzer
 {
   public:
-    jbuzzer(int buzzerPin) : mBuzzerPin(buzzerPin) { finish(); }
-
-    void playnote(int freq, int dur)
-    {
-      note =0;
-      waitto =0;
-      playing=true;
-
-      m0[0]=freq;
-      t0[0]=dur;
-      
-      melody=m0;
-      tempo=t0;
-      len = 1;
-    }
+    jbuzzer(int buzzerPin) : mBuzzerPin(buzzerPin) { loadMelodies(); finish(); }
 
     void playsong(int s)
     {
       note = 0;
       waitto = 0;
-      playing=true;
 
+      if (s<1 || s>Melodies.size())
+      {
+        Serial.println("Invalid melody number.");
+        return;
+      }
+
+      playing=true;
       Serial.print("Playing song ");
       Serial.println(s);
-      
-      switch (s)
-      {
-        case 1:
-          melody = melody1;
-          tempo = tempo1;
-          len = sizeof(melody1) / sizeof(int);
-          break;
-        case 2:
-          melody = melody2;
-          tempo = tempo2;
-          len = sizeof(melody2) / sizeof(int);
-          break;
-        case 3:
-          melody = melody3;
-          tempo = tempo3;
-          len = sizeof(melody3) / sizeof(int);
-          break;
-        case 4:
-          melody = melody4;
-          tempo = tempo4;
-          len = sizeof(melody4) / sizeof(int);
-          break;
-        case 5:
-          melody = melody5;
-          tempo = tempo5;
-          len = sizeof(melody5) / sizeof(int);
-          break;
-        case 6:
-          melody = melody6;
-          tempo = tempo6;
-          len = sizeof(melody6) / sizeof(int);
-          break;
-        case 7:
-          melody = melody7;
-          tempo = tempo7;
-          len = sizeof(melody7) / sizeof(int);
-          break;        
-          
-        default:
-          finish(); // play nothing.  
-      }
+
+      melody = s-1;   
     }
 
     #ifdef __USETONE
@@ -221,21 +191,15 @@ class jbuzzer
       if (playing && millis()>waitto)
         {
           stoptone();
-          if (note==len)
+          if (note==Melodies[melody].mNotes.size())
             finish();
           else
           {
-            int noteDuration = 2000/(*tempo);
-
-//            Serial.print(noteDuration);
-//            Serial.print("\t");
-//            Serial.println(*melody);
-            starttone((*melody), noteDuration);
+            unsigned long noteDuration = 2000/(Melodies[melody].mTempo[note]);
+            unsigned int noteFrequency = Melodies[melody].mNotes[note];
+            starttone(noteFrequency, noteDuration);
             //pause for the note's duration plus 30 ms:
             waitto = millis()+noteDuration+30;
-
-            ++melody;
-            ++tempo;
             ++note;
           }
         }
@@ -243,21 +207,16 @@ class jbuzzer
 
     void finish()
     {
-      playing=false; note=0; waitto=0; len=0;
+      playing=false; note=0; waitto=0;
     }
 
 
   private:
-    int * melody;
-    int * tempo;
-    int len;
+    int melody;
     bool playing;
     int note;
     int mBuzzerPin;
     unsigned long waitto;
-
-    int m0[1];
-    int t0[1];
 };
 
 #endif

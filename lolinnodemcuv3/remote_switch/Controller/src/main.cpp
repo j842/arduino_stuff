@@ -27,7 +27,7 @@ http:10.10.10.200/update to update firmware.
 */
 
 udpbro udp;
-jwifiota wifiota("ESP32 Controller, Version 0.14");
+jwifiota wifiota("ESP32 Controller, Version 0.16");
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
 
@@ -103,7 +103,7 @@ class flashfun
       mNdx++;
       if (mNdx<10)
       {
-        getSwitch().changelightymode(mNdx<5 ? kls_01 : kls_10);
+        getSwitch().changelightymode(mNdx<5 ? kls_10 : kls_01);
         mNextTime=millis()+kNextTime;
       }
       else
