@@ -6,6 +6,10 @@
   Made into a non-blocking class by J.
 */
 
+#ifndef __JBUZZER_H
+#define __JBUZZER_H
+
+
 #include "pitches.h"
 
 
@@ -256,6 +260,4 @@ class jbuzzer
     int t0[1];
 };
 
-
-
-
+#endif

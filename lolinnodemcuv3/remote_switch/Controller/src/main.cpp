@@ -9,8 +9,9 @@
 #include <udpbro.h>
 #include <jbuzzer.h>
 #include <jwifiota.h>
-#include <jswitch.h>
-#include <jled.h>
+
+#include <lightyswitch.h>
+
 
 /*
 Built with PlatformIO in Visual Studio Code.
@@ -26,40 +27,24 @@ http:10.10.10.200/update to update firmware.
 */
 
 udpbro udp;
-jwifiota wifiota("ESP32 Controller, Version 0.12");
+jwifiota wifiota("ESP32 Controller, Version 0.14");
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
-std::vector<jswitch> gSwitches;
 
-std::vector<jled> gOnLeds;
-std::vector<jled> gOffLeds;
+std::vector<lightyswitch> gSwitches;
+
 
 void setup()
 {
   Serial.begin(115200);
 
-  gSwitches.push_back(jswitch(27)); 
-  gSwitches.push_back(jswitch(26)); 
-  gSwitches.push_back(jswitch(25)); 
-  gSwitches.push_back(jswitch(33)); 
-  gSwitches.push_back(jswitch(32)); 
-
-  gOnLeds.push_back(jled(16));
-  gOnLeds.push_back(jled(17));
-  gOnLeds.push_back(jled(5));
-  gOnLeds.push_back(jled(18));
-  gOnLeds.push_back(jled(19));
-
-  gOffLeds.push_back(jled(21));
-  gOffLeds.push_back(jled(13));
-  gOffLeds.push_back(jled(14));
-  gOffLeds.push_back(jled(22));
-  gOffLeds.push_back(jled(23));
-
+  gSwitches.push_back(lightyswitch(27,16,21,jbuz));
+  gSwitches.push_back(lightyswitch(26,17,13,jbuz));
+  gSwitches.push_back(lightyswitch(25, 5,14,jbuz));
+  gSwitches.push_back(lightyswitch(33,18,22,jbuz));
+  gSwitches.push_back(lightyswitch(32,19,23,jbuz));
 
   for (auto & s: gSwitches) s.setup();
-  for (auto & l: gOnLeds) l.setup();
-  for (auto & l: gOffLeds) l.setup();
 
   wifiota.setup();
 
@@ -83,19 +68,20 @@ class flashfun
     
     void start(bool bossmainOn)
     {
-      for (auto & l: gOnLeds) l.seton(false);
-      for (auto & l: gOffLeds) l.seton(false);
+      for (auto & s : gSwitches) s.changelightymode(kls_00);
+
       mNdx=0;
       if (bossmainOn)
       {
         mState=ff_RunningFlashy;
-        gOnLeds[0].seton(true);
+        gSwitches[0].changelightymode(kls_10);
         mNextTime=millis()+kNextTime;
       }
       else
-      {
+      { // bossmain off, go to sleep.
         mState=ff_RunningFadeBossMain;
-        gOffLeds[0].seton(true);
+        for (auto & s : gSwitches) s.changelightymode(kls_00);
+        gSwitches[0].changelightymode(kls_01);
         mNextTime=millis()+kFadeOffTime;
         jbuz.playsong(4);
       }
@@ -108,31 +94,27 @@ class flashfun
       if (mState==ff_RunningFadeBossMain)
       { // finish up
         mState=ff_NotRunning;
-        gOffLeds[0].seton(false); // ssh.
+        gSwitches[0].changelightymode(kls_00);
         return;
       }
 
       // flashyfun
-      getLED().seton(false);
+      getSwitch().changelightymode(kls_00);
       mNdx++;
       if (mNdx<10)
       {
-        getLED().seton(true);
+        getSwitch().changelightymode(mNdx<5 ? kls_01 : kls_10);
         mNextTime=millis()+kNextTime;
       }
       else
       { // all done, set to correct values.
         mState=ff_NotRunning;
-        for (int i=0;i<gSwitches.size();++i)
-        {
-          gOnLeds[i].seton(gSwitches[i].ison());
-          gOffLeds[i].seton(!gSwitches[i].ison());
-        }
+        for (auto & s : gSwitches) s.changelightymode(kls_auto);
       }
     }
 
     tffstate state() {return mState;}
-    jled & getLED() {if (mNdx<5) return gOnLeds[mNdx]; else return gOffLeds[9-mNdx];}
+    lightyswitch & getSwitch() {if (mNdx<5) return gSwitches[mNdx]; else return gSwitches[9-mNdx];}
   private:
     tffstate mState;
     int mNdx;
@@ -143,64 +125,26 @@ class flashfun
 
 flashfun ff;
 
-static bool alreadydone=false;
-
-void handleSwitches()
-{
-  for (auto & s: gSwitches) s.loop();
-  for (auto & l: gOnLeds) l.loop();
-  for (auto & l: gOffLeds) l.loop();
-
-  ff.loop();
-
-  auto & bossmain = gSwitches[0];
-    
-  if (bossmain.changed_since_last_read())
-  {
-    bool on = bossmain.ison();
-    gOnLeds[0].seton(on);
-    gOffLeds[0].seton(!on); 
-
-    if (on)
-      ff.start(true);
-    else
-      ff.start(false);
-  }
-
-  if (bossmain.ison() && ff.state()==ff_NotRunning)
-  {
-    int toplay=0;
-    for (int i=1;i<gSwitches.size();++i)
-      if (gSwitches[i].changed_since_last_read())
-      {
-        bool on = gSwitches[i].ison();
-        if (!on && toplay==0)
-          toplay=7;
-        else
-          toplay=6;
-        
-        gOnLeds[i].seton(on);
-        gOffLeds[i].seton(!on);      
-      }
-    if (toplay>0)
-      jbuz.playsong(toplay);
-  } 
-}
-
+bool prevbossmain = false;
 
 void loop()
 {
-  if (!alreadydone)
-  {
-    jbuz.playsong(1);
-    // buf b;
-    // b.setString(kMessage,"cool");
-    // udp.send(b,IPAddress(10,10,10,200),9999);
-    alreadydone=true;
-  }
-
-  handleSwitches();
-
   jbuz.loop();
   wifiota.loop();
+
+  for (auto & s: gSwitches) s.loop();
+
+  ff.loop();
+
+  // handle bossmain switch.
+  auto & bossmain = gSwitches[0];
+  if (bossmain.ison() != prevbossmain)
+  {
+    if (bossmain.ison())
+      ff.start(true);
+    else
+      ff.start(false);
+    prevbossmain = bossmain.ison();
+  }
+
 }
