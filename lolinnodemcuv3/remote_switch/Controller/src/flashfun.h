@@ -3,15 +3,14 @@
 
 typedef enum {
   ff_NotRunning,
-  ff_RunningFlashy,
-  ff_RunningFadeBossMain
+  ff_RunningFlashy
 } tffstate;
 
 // make turning the bossmain switch on or off fancy :-)
 class flashfun
 {
   public:
-    flashfun(std::vector<lightyswitch> & lsv, jbuzzer & jbuz);
+    flashfun(const bossmain & bm, std::vector<lightyswitch> & lsv, jbuzzer & jbuz);
     void loop();
     tffstate state();
 
@@ -25,9 +24,9 @@ class flashfun
     bool mPrevBoss;
 
     std::vector<lightyswitch> & mSwitches;
+    const bossmain & mBossMain;
     jbuzzer & mBuz;
 
-    static const int kFadeOffTime=3000; // 3 seconds.
     static const int kNextTime=100; // 100 milliseconds.
 };
 

@@ -1,12 +1,50 @@
 #include <Arduino.h>
 
 #include <vector>
-#include <lightyswitch.h>
+#include <bossmain.h>
 #include <flashfun.h>
 
 // make turning the bossmain switch on or off fancy :-)
-flashfun::flashfun(std::vector<lightyswitch> & lsv, jbuzzer & jbuz) : 
-    mState(ff_NotRunning),mNdx(0),mNextTime(0),mPrevBoss(false),mSwitches(lsv),mBuz(jbuz) {}
+flashfun::flashfun(const bossmain & bm, std::vector<lightyswitch> & lsv, jbuzzer & jbuz) : 
+    mState(ff_NotRunning),mNdx(0),mNextTime(0),mPrevBoss(false),
+    mSwitches(lsv),mBossMain(bm),mBuz(jbuz) {}
+
+
+void flashfun::loop()
+{
+  if (mBossMain.ison() != mPrevBoss)
+    {
+      start(mBossMain.ison());
+      mPrevBoss = mBossMain.ison();
+    }
+
+
+  if (mState==ff_NotRunning || (millis()<mNextTime)) return;
+
+  // flashyfun
+  getSwitch().changelightymode(kls_00);
+  mNdx++;
+  if (mNdx<2*mSwitches.size())
+  {
+    getSwitch().changelightymode(mNdx<mSwitches.size() ? kls_10 : kls_01);
+    mNextTime=millis()+kNextTime;
+  }
+  else
+  { // all done, set to correct values.
+    mState=ff_NotRunning;
+    for (auto & s : mSwitches) s.changelightymode(kls_switch_enabled);
+  }
+}
+
+tffstate flashfun::state() {return mState;}
+lightyswitch & flashfun::getSwitch() 
+  {
+    if (mNdx<mSwitches.size()) 
+      return mSwitches[mNdx]; 
+    else 
+      return mSwitches[(2*mSwitches.size()-1)-mNdx];
+  }
+
 
 void flashfun::start(bool bossmainOn)
 {
@@ -21,56 +59,8 @@ void flashfun::start(bool bossmainOn)
   }
   else
   { // bossmain off, go to sleep.
-    mState=ff_RunningFadeBossMain;
+    mState=ff_NotRunning;
     for (auto & s : mSwitches) s.changelightymode(kls_00);
-    mSwitches[0].changelightymode(kls_01);
-    mNextTime=millis()+kFadeOffTime;
     mBuz.playsong(4);
   }
 }
-
-void flashfun::loop()
-{
-
-  if (mSwitches[0].ison() != mPrevBoss)
-    {
-      if (mSwitches[0].ison())
-        start(true);
-      else
-        start(false);
-      mPrevBoss = mSwitches[0].ison();
-    }
-
-
-  if (mState==ff_NotRunning || (millis()<mNextTime)) return;
-
-  if (mState==ff_RunningFadeBossMain)
-  { // finish up
-    mState=ff_NotRunning;
-    mSwitches[0].changelightymode(kls_00);
-    return;
-  }
-
-  // flashyfun
-  getSwitch().changelightymode(kls_00);
-  mNdx++;
-  if (mNdx<10)
-  {
-    getSwitch().changelightymode(mNdx<5 ? kls_10 : kls_01);
-    mNextTime=millis()+kNextTime;
-  }
-  else
-  { // all done, set to correct values.
-    mState=ff_NotRunning;
-    for (auto & s : mSwitches) s.changelightymode(kls_switch_enabled);
-  }
-}
-
-tffstate flashfun::state() {return mState;}
-lightyswitch & flashfun::getSwitch() 
-  {
-    if (mNdx<5) 
-      return mSwitches[mNdx]; 
-    else 
-      return mSwitches[9-mNdx];
-  }

@@ -1,3 +1,6 @@
+#ifndef __LIGHTYSWITCH_H
+#define __LIGHTYSWITCH_H
+
 
 #include <jswitch.h>
 #include <jled.h>
@@ -20,8 +23,9 @@ class lightyswitch
       mSwitch(switchpin),
       mOnLight(onlightpin),
       mOffLight(offlightpin),
-      mMode(kls_00),
-      mBuz(buz)
+      mMode(kls_switch_enabled),
+      mBuz(buz),
+      mPrevOn(false)
       {
       }
 
@@ -31,7 +35,8 @@ class lightyswitch
       mOnLight.setup();
       mOffLight.setup();
 
-      changelightymode(kls_00);
+      changelightymode(kls_switch_enabled);
+      updatelightsauto();
     }
 
     void loop()
@@ -40,8 +45,7 @@ class lightyswitch
       mOnLight.loop();
       mOffLight.loop();
 
-      if (mMode==kls_switch_enabled)
-        if (changed_since_last_read())
+      if (mMode==kls_switch_enabled && changed())
         {
           updatelightsauto();
           if (ison())
@@ -51,14 +55,7 @@ class lightyswitch
         }
     }
 
-
-
-    void setlights(bool onl, bool offl)
-    {
-      mOnLight.seton(onl);
-      mOffLight.seton(offl);
-    }
-
+    // override light behaviour.
     void changelightymode(tlightymode newmode)
     {
       mMode = newmode;
@@ -78,25 +75,36 @@ class lightyswitch
       };
     }
 
-    bool ison()
+    bool ison() const
     {
         return mSwitch.ison();
     }
 
   private:
+    bool changed()
+    {
+      return (mPrevOn!=mSwitch.ison());
+    }
     void updatelightsauto()
     {
+      mPrevOn=mSwitch.ison();
       setlights(mSwitch.ison(), !mSwitch.ison());
     }
-    
-    bool changed_since_last_read()
+
+    void setlights(bool onl, bool offl)
     {
-        return mSwitch.changed_since_last_read();
-    }   
+      mOnLight.seton(onl);
+      mOffLight.seton(offl);
+    }
 
     jswitch mSwitch;
     jled mOnLight;
     jled mOffLight;
     tlightymode mMode;
     jbuzzer & mBuz;
+
+    bool mPrevOn;
 };
+
+
+#endif

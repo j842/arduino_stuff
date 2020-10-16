@@ -10,7 +10,7 @@
 class jswitch 
 {
   public:
-    jswitch(int pin) : mPin(pin), mIsOn(false), mChangedSinceLastRead(false), mLastChange(0) 
+    jswitch(int pin) : mPin(pin), mIsOn(false), mLastChange(0) 
     {
     }
 
@@ -21,38 +21,24 @@ class jswitch
 
     void loop()
     {
-      bool on = (digitalRead(mPin)==LOW);
-
-      if (mChangedSinceLastRead)
-      { // state hasn't been checked, so just keep it updated to current switch position (no delay).
-        mIsOn=on;
-        return;
-      }
-
+      bool on = (digitalRead(mPin)==LOW);      
       bool ready = ((millis()-mLastChange)>DEBOUNCE_MS);
       if (mLastChange>0)
         if (on==mIsOn || !ready)
           return; // unchanged, or debouncing.
 
-      mChangedSinceLastRead = true;
       mIsOn=on;
       mLastChange=millis();
     }
-
-    bool changed_since_last_read() const
-    {
-      return mChangedSinceLastRead;
-    }
     
-    bool ison() { 
-      mChangedSinceLastRead=false; // clear it.
+    bool ison() const
+    { 
       return mIsOn;
     }
 
   private:
     int mPin;
     bool mIsOn;
-    bool mChangedSinceLastRead;
     unsigned long mLastChange;
 };
 

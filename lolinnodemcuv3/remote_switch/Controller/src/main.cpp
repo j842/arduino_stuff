@@ -11,6 +11,7 @@
 #include <jwifiota.h>
 
 #include <lightyswitch.h>
+#include <bossmain.h>
 #include <flashfun.h>
 
 
@@ -28,22 +29,23 @@ http:10.10.10.200/update to update firmware.
 */
 
 udpbro udp;
-jwifiota wifiota("ESP32 Controller, Version 0.17");
+jwifiota wifiota("ESP32 Controller, Version 0.18");
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
+bossmain gBossMain(27,16,21,jbuz);
 std::vector<lightyswitch> gSwitches;
 
 void setup()
 {
   Serial.begin(115200);
 
-  gSwitches.push_back(lightyswitch(27,16,21,jbuz));
   gSwitches.push_back(lightyswitch(26,17,13,jbuz));
   gSwitches.push_back(lightyswitch(25, 5,14,jbuz));
   gSwitches.push_back(lightyswitch(33,18,22,jbuz));
   gSwitches.push_back(lightyswitch(32,19,23,jbuz));
 
   for (auto & s: gSwitches) s.setup();
+  gBossMain.setup();
 
   wifiota.setup();
 
@@ -55,11 +57,12 @@ void setup()
 
 void loop()
 {
-  static flashfun ff(gSwitches,jbuz);
+  static flashfun ff(gBossMain,gSwitches,jbuz);
 
   jbuz.loop();
   wifiota.loop();
 
+  gBossMain.loop();
   for (auto & s: gSwitches) s.loop();
   ff.loop();
 }
