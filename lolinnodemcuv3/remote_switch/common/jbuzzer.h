@@ -12,10 +12,10 @@
 #include <string>
 #include "pitches.h"
 
-class melody 
+class cMelody 
 {
   public:
-    melody(std::string name, std::vector<int> notes, std::vector<int> tempos) :
+    cMelody(std::string name, std::vector<int> notes, std::vector<int> tempos) :
       mName(name), mNotes(notes), mTempo(tempos)
     {
     }
@@ -25,112 +25,16 @@ class melody
     std::vector<int> mTempo;
 };
 
-std::vector<melody> Melodies;
 
-
-void loadMelodies()
-{
-  Melodies.push_back(melody(
-    "Jingle Bells",
-    {   NOTE_E5, NOTE_E5, NOTE_E5,
-        NOTE_E5, NOTE_E5, NOTE_E5,
-        NOTE_E5, NOTE_G5, NOTE_C5, NOTE_D5,
-        NOTE_E5, NOTE_F5, NOTE_F5, NOTE_F5, NOTE_F5,
-        NOTE_F5, NOTE_E5, NOTE_E5, NOTE_E5, NOTE_E5,
-        NOTE_E5, NOTE_D5, NOTE_D5, NOTE_E5,
-        NOTE_D5, NOTE_G5
-    },
-    {
-      8, 8, 4,
-      8, 8, 4,
-      8, 8, 8, 8,
-      2,
-      8, 8, 8, 8,
-      8, 8, 8, 16, 16,
-      8, 8, 8, 8,
-      4, 4
-    }
-  ));
-
-  Melodies.push_back(melody(
-    "We wish you a merry Christmas",
-    {
-      NOTE_B3, 
-      NOTE_F4, NOTE_F4, NOTE_G4, NOTE_F4, NOTE_E4,
-      NOTE_D4, NOTE_D4, NOTE_D4,
-      NOTE_G4, NOTE_G4, NOTE_A4, NOTE_G4, NOTE_F4,
-      NOTE_E4, NOTE_E4, NOTE_E4,
-      NOTE_A4, NOTE_A4, NOTE_B4, NOTE_A4, NOTE_G4,
-      NOTE_F4, NOTE_D4, NOTE_B3, NOTE_B3,
-      NOTE_D4, NOTE_G4, NOTE_E4,
-      NOTE_F4      
-    },
-    {
-      4,
-      4, 8, 8, 8, 8,
-      4, 4, 4,
-      4, 8, 8, 8, 8,
-      4, 4, 4,
-      4, 8, 8, 8, 8,
-      4, 4, 8, 8,
-      4, 4, 4,
-      2
-    }
-  ));
-
-  Melodies.push_back(melody(
-    "Santa Claus is coming to town",
-    {
-      NOTE_G4,
-      NOTE_E4, NOTE_F4, NOTE_G4, NOTE_G4, NOTE_G4,
-      NOTE_A4, NOTE_B4, NOTE_C5, NOTE_C5, NOTE_C5,
-      NOTE_E4, NOTE_F4, NOTE_G4, NOTE_G4, NOTE_G4,
-      NOTE_A4, NOTE_G4, NOTE_F4, NOTE_F4,
-      NOTE_E4, NOTE_G4, NOTE_C4, NOTE_E4,
-      NOTE_D4, NOTE_F4, NOTE_B3,
-      NOTE_C4      
-    },
-    {
-      8,
-      8, 8, 4, 4, 4,
-      8, 8, 4, 4, 4,
-      8, 8, 4, 4, 4,
-      8, 8, 4, 2,
-      4, 4, 4, 4,
-      4, 2, 4,
-      1      
-    }
-  ));
-
-  Melodies.push_back(melody(
-    "Death March",
-    {NOTE_C4, NOTE_G3,NOTE_G3, NOTE_GS3, NOTE_G3,0, NOTE_B3, NOTE_C4},
-    {4, 8, 8, 4,4,4,4,4}
-  ));
-
-  Melodies.push_back(melody(
-    "I forget what this is.",
-    {NOTE_B3, NOTE_C5, NOTE_B5, NOTE_D5, NOTE_A4, NOTE_B4, NOTE_B5, NOTE_G4, NOTE_B4, NOTE_D4, NOTE_C4, NOTE_B4, NOTE_C5, NOTE_B5, 0, NOTE_C5, NOTE_B5, NOTE_G4, NOTE_B5, NOTE_FS4, NOTE_G4, NOTE_A5, NOTE_B5, NOTE_G3, NOTE_D4, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_D4, NOTE_G3, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_G3, NOTE_B4, NOTE_A4, NOTE_C5, NOTE_B5, NOTE_G4, NOTE_B5, NOTE_FS4, NOTE_G4, NOTE_A5, NOTE_B5, NOTE_G3, NOTE_D4, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_D4, NOTE_G3, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_G3, NOTE_B4, NOTE_A4 },
-    {4, 1, 4, 4, 4, 1, 4, 4, 2, 2, 8, 1, 8, 3, 2, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1 }
-  ));
-
-  Melodies.push_back(melody(
-    "Boo Bee",
-    {NOTE_B3, NOTE_C5},
-    {8,8}
-  ));
-
-  Melodies.push_back(melody(
-    "Bee Boo",
-    {NOTE_C5, NOTE_B3},
-    {8,8}
-  ));
-}
 
 class jbuzzer
 {
   public:
-    jbuzzer(int buzzerPin) : mBuzzerPin(buzzerPin) { loadMelodies(); finish(); }
+    jbuzzer(int buzzerPin) : mBuzzerPin(buzzerPin) 
+      { 
+        loadMelodies();       
+        finish(); 
+      }
 
     void playsong(int s)
     {
@@ -211,12 +115,114 @@ class jbuzzer
     }
 
 
+
+  void loadMelodies()
+  {
+    Melodies.push_back(cMelody(
+      "Jingle Bells",
+      {   NOTE_E5, NOTE_E5, NOTE_E5,
+          NOTE_E5, NOTE_E5, NOTE_E5,
+          NOTE_E5, NOTE_G5, NOTE_C5, NOTE_D5,
+          NOTE_E5, NOTE_F5, NOTE_F5, NOTE_F5, NOTE_F5,
+          NOTE_F5, NOTE_E5, NOTE_E5, NOTE_E5, NOTE_E5,
+          NOTE_E5, NOTE_D5, NOTE_D5, NOTE_E5,
+          NOTE_D5, NOTE_G5
+      },
+      {
+        8, 8, 4,
+        8, 8, 4,
+        8, 8, 8, 8,
+        2,
+        8, 8, 8, 8,
+        8, 8, 8, 16, 16,
+        8, 8, 8, 8,
+        4, 4
+      }
+    ));
+
+    Melodies.push_back(cMelody(
+      "We wish you a merry Christmas",
+      {
+        NOTE_B3, 
+        NOTE_F4, NOTE_F4, NOTE_G4, NOTE_F4, NOTE_E4,
+        NOTE_D4, NOTE_D4, NOTE_D4,
+        NOTE_G4, NOTE_G4, NOTE_A4, NOTE_G4, NOTE_F4,
+        NOTE_E4, NOTE_E4, NOTE_E4,
+        NOTE_A4, NOTE_A4, NOTE_B4, NOTE_A4, NOTE_G4,
+        NOTE_F4, NOTE_D4, NOTE_B3, NOTE_B3,
+        NOTE_D4, NOTE_G4, NOTE_E4,
+        NOTE_F4      
+      },
+      {
+        4,
+        4, 8, 8, 8, 8,
+        4, 4, 4,
+        4, 8, 8, 8, 8,
+        4, 4, 4,
+        4, 8, 8, 8, 8,
+        4, 4, 8, 8,
+        4, 4, 4,
+        2
+      }
+    ));
+
+    Melodies.push_back(cMelody(
+      "Santa Claus is coming to town",
+      {
+        NOTE_G4,
+        NOTE_E4, NOTE_F4, NOTE_G4, NOTE_G4, NOTE_G4,
+        NOTE_A4, NOTE_B4, NOTE_C5, NOTE_C5, NOTE_C5,
+        NOTE_E4, NOTE_F4, NOTE_G4, NOTE_G4, NOTE_G4,
+        NOTE_A4, NOTE_G4, NOTE_F4, NOTE_F4,
+        NOTE_E4, NOTE_G4, NOTE_C4, NOTE_E4,
+        NOTE_D4, NOTE_F4, NOTE_B3,
+        NOTE_C4      
+      },
+      {
+        8,
+        8, 8, 4, 4, 4,
+        8, 8, 4, 4, 4,
+        8, 8, 4, 4, 4,
+        8, 8, 4, 2,
+        4, 4, 4, 4,
+        4, 2, 4,
+        1      
+      }
+    ));
+
+    Melodies.push_back(cMelody(
+      "Death March",
+      {NOTE_C4, NOTE_G3,NOTE_G3, NOTE_GS3, NOTE_G3,0, NOTE_B3, NOTE_C4},
+      {4, 8, 8, 4,4,4,4,4}
+    ));
+
+    Melodies.push_back(cMelody(
+      "I forget what this is.",
+      {NOTE_B3, NOTE_C5, NOTE_B5, NOTE_D5, NOTE_A4, NOTE_B4, NOTE_B5, NOTE_G4, NOTE_B4, NOTE_D4, NOTE_C4, NOTE_B4, NOTE_C5, NOTE_B5, 0, NOTE_C5, NOTE_B5, NOTE_G4, NOTE_B5, NOTE_FS4, NOTE_G4, NOTE_A5, NOTE_B5, NOTE_G3, NOTE_D4, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_D4, NOTE_G3, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_G3, NOTE_B4, NOTE_A4, NOTE_C5, NOTE_B5, NOTE_G4, NOTE_B5, NOTE_FS4, NOTE_G4, NOTE_A5, NOTE_B5, NOTE_G3, NOTE_D4, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_D4, NOTE_G3, NOTE_E4, NOTE_D4, NOTE_C4, NOTE_G3, NOTE_B4, NOTE_A4 },
+      {4, 1, 4, 4, 4, 1, 4, 4, 2, 2, 8, 1, 8, 3, 2, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1, 4, 1, 4, 4, 3, 8, 9, 1, 4, 4, 5, 8, 8, 4, 4, 4, 8, 8, 3, 8, 1 }
+    ));
+
+    Melodies.push_back(cMelody(
+      "Boo Bee",
+      {NOTE_B3, NOTE_C5},
+      {8,8}
+    ));
+
+    Melodies.push_back(cMelody(
+      "Bee Boo",
+      {NOTE_C5, NOTE_B3},
+      {8,8}
+    ));
+  }
+
   private:
     int melody;
     bool playing;
     int note;
     int mBuzzerPin;
     unsigned long waitto;
+
+    std::vector<cMelody> Melodies;
 };
 
 #endif

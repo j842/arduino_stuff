@@ -5,7 +5,7 @@
 
 typedef enum
 { // on,off
-  kls_auto,
+  kls_switch_enabled,
   kls_00, 
   kls_10,
   kls_01,
@@ -40,7 +40,7 @@ class lightyswitch
       mOnLight.loop();
       mOffLight.loop();
 
-      if (mMode==kls_auto)
+      if (mMode==kls_switch_enabled)
         if (changed_since_last_read())
         {
           updatelightsauto();
@@ -51,10 +51,7 @@ class lightyswitch
         }
     }
 
-    void updatelightsauto()
-    {
-      setlights(mSwitch.ison(), !mSwitch.ison());
-    }
+
 
     void setlights(bool onl, bool offl)
     {
@@ -87,6 +84,11 @@ class lightyswitch
     }
 
   private:
+    void updatelightsauto()
+    {
+      setlights(mSwitch.ison(), !mSwitch.ison());
+    }
+    
     bool changed_since_last_read()
     {
         return mSwitch.changed_since_last_read();
