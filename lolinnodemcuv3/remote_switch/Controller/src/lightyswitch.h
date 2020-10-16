@@ -20,11 +20,11 @@ class lightyswitch
 {
   public:
     lightyswitch(int switchpin, int onlightpin, int offlightpin, jbuzzer & buz) :
+      mBuz(buz),
       mSwitch(switchpin),
       mOnLight(onlightpin),
       mOffLight(offlightpin),
       mMode(kls_switch_enabled),
-      mBuz(buz),
       mPrevOn(false)
       {
       }
@@ -80,6 +80,9 @@ class lightyswitch
         return mSwitch.ison();
     }
 
+  protected:
+      jbuzzer & mBuz;
+
   private:
     bool changed()
     {
@@ -101,7 +104,6 @@ class lightyswitch
     jled mOnLight;
     jled mOffLight;
     tlightymode mMode;
-    jbuzzer & mBuz;
 
     bool mPrevOn;
 };
