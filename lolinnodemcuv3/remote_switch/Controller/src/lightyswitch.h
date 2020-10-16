@@ -2,17 +2,13 @@
 #define __LIGHTYSWITCH_H
 
 
-#include <jswitch.h>
-#include <jled.h>
-#include <jbuzzer.h>
-
 typedef enum
 { // on,off
   kls_switch_enabled,
-  kls_00, 
-  kls_10,
-  kls_01,
-  kls_11
+  kls_switch_disabled_00, 
+  kls_switch_disabled_10,
+  kls_switch_disabled_01,
+  kls_switch_disabled_11
 } tlightymode;
 
 
@@ -55,29 +51,30 @@ class lightyswitch
         }
     }
 
-    // override light behaviour.
-    void changelightymode(tlightymode newmode)
-    {
-      mMode = newmode;
-      switch (newmode)
-      {
-        case kls_00:
-          setlights(false,false); break;
-        case kls_01:
-          setlights(false,true); break;
-        case kls_10:
-          setlights(true,false); break;
-        case kls_11:
-          setlights(true,true); break;
-
-        default:
-          updatelightsauto(); break;
-      };
-    }
 
     bool ison() const
     {
         return mSwitch.ison();
+    }
+
+    void Enable() 
+    {
+      TurnLightsOn();
+    }
+
+    void ShutDown()
+    {
+      TurnLightsOff();
+    }
+
+    void TurnLightsOff()
+    {
+      changelightymode(kls_switch_disabled_00);
+    }
+
+    void TurnLightsOn()
+    {
+      changelightymode(kls_switch_enabled);
     }
 
   protected:
@@ -98,6 +95,27 @@ class lightyswitch
     {
       mOnLight.seton(onl);
       mOffLight.seton(offl);
+    }
+
+    
+    // override light behaviour.
+    void changelightymode(tlightymode newmode)
+    {
+      mMode = newmode;
+      switch (newmode)
+      {
+        case kls_switch_disabled_00:
+          setlights(false,false); break;
+        case kls_switch_disabled_01:
+          setlights(false,true); break;
+        case kls_switch_disabled_10:
+          setlights(true,false); break;
+        case kls_switch_disabled_11:
+          setlights(true,true); break;
+
+        default:
+          updatelightsauto(); break;
+      };
     }
 
     jswitch mSwitch;

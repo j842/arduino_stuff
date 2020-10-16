@@ -1,9 +1,6 @@
 #ifndef __BOSSMAIN_H
 #define __BOSSMAIN_H
 
-#include <Arduino.h>
-#include <lightyswitch.h>
-
 class bossmain : protected lightyswitch
 {
     public:
@@ -29,7 +26,7 @@ class bossmain : protected lightyswitch
         {
             mPrevState = ison();
             if (ison())
-                lightyswitch::changelightymode(kls_switch_enabled);
+                lightyswitch::TurnLightsOn();
             else
             {
                 mIsFading = true;
@@ -41,7 +38,7 @@ class bossmain : protected lightyswitch
         if (mIsFading && millis()>=mNextTime)
         {
             mIsFading=false;
-            lightyswitch::changelightymode(kls_00);
+            TurnLightsOff();
         }
     }
 
