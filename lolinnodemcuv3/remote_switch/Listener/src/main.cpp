@@ -23,6 +23,7 @@ jwifiota wifiota("ESP8266 Aux Listener, Version 0.01");
 // based on guide here:
 // https://medium.com/@loginov_rocks/quick-start-with-nodemcu-v3-esp8266-arduino-ecosystem-and-platformio-ide-b8415bf9a038
 
+const IPAddress kControllerIP(10,10,10,200);
 
 
 void setup()
@@ -45,6 +46,16 @@ void setup()
 
 void loop()
 {
+  static bool firstrun=true;
+
+  if (firstrun)
+  {
+    firstrun = false;
+    jbuf rbuf;
+    rbuf.setBool(kReq_Power, true);
+    udp.send(rbuf,kControllerIP);
+  }
+
   if (udp.loop()) // has UDP received packet.
   {
     const jbuf & b( udp.getBuf());
@@ -52,12 +63,18 @@ void loop()
     switch (b.getID())
     {
       case kCmd_Power:
-        Serial.printf("UDP Message: CMD_POWER, %s\n", b.getBool() ? "ON" : "OFF");
-        break;
+      {
+        bool turnon=b.getBool();
+        Serial.printf("UDP Message: CMD_POWER, %s\n", turnon ? "ON" : "OFF");
 
+        jbuf rbuf;
+        rbuf.setBool(kStat_Power, turnon);
+        udp.send(rbuf,kControllerIP);
+
+        break;
+      }
       default:
         Serial.println("Unknown UDP Message.");
-
     }
     // std::string ReceivedMessage( b.getString() );
     // Serial.printf("UDP message: %s\n", ReceivedMessage.c_str());

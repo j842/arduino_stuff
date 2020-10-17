@@ -43,18 +43,21 @@ class auxswitch : protected lightyswitch
                 int x = (((mConfirmationTimeout - millis())/333)%2);
                 (x==0) ? TurnLightsOff() : TurnLightsOn();
 
-                if (millis()>mConfirmationTimeout)
-                {
-                    TurnLightsOff();
-                    mBuz.playsong(7);
-                    mState = kls_timeout;
-                }
+                if (millis()<mConfirmationTimeout)
+                    return; // nothing else to do.
+
+                TurnLightsOff();
+                mBuz.playsong(7);
+                mState = kls_timeout;
             }
+
+        if (mShutdown)
+            return;
 
         bool wason = ison();
         lightyswitch::loop();
 
-        if (mState!=kls_waiting && ison()!=wason && !mShutdown) // state changed.
+        if (ison()!=wason || ison()!=mPower) // state changed.
         {
             mPower = ison();
             sendcmd_and_indicate();

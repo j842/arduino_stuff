@@ -32,7 +32,7 @@ http:10.10.10.200/update to update firmware.
 */
 
 udpbro udp;
-jwifiota wifiota("ESP32 Controller, Version 0.20");
+jwifiota wifiota("ESP32 Controller, Version 0.21");
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
 bossmain gBossMain(27,16,21,jbuz);
