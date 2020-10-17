@@ -78,5 +78,15 @@ void loop()
 
   for (auto & s: gSwitches) s.loop();
 
+  
+  if (udp.loop()) // has UDP received packet.
+  {
+    const jbuf & b( udp.getBuf());
+    IPAddress remoteaddr = udp.getRemoteAddress();
+    for (auto & s : gSwitches)
+      if (s.getIP()==remoteaddr)
+        s.handleUDP(b);
+  }
+
   //ff.loop();
 }

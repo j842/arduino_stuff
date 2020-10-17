@@ -8,8 +8,9 @@ typedef enum
 {
     kNone = 0,
     kMessage,
-    kLounge_MainSwitch_Init,   
-    kLounge_MainSwitch_Change, 
+    kCmd_Power, // server sets client's power state. bool for on/off.
+    kStat_Power, // client reports current power state. bool for on/off
+    kReq_Power, // client requests power state from server.
 } tID;
 
 typedef enum 
@@ -26,11 +27,11 @@ typedef enum
 // [1] = Payload type (uint8_t)
 // [2] = Payload len  (uint8_t)
 // [3,...] = Payload
-class buf
+class jbuf
 {
     public:
 
-        buf() {clear();}
+        jbuf() {clear();}
 
         void clear()
         {

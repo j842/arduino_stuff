@@ -11,7 +11,6 @@ typedef enum
   kls_switch_disabled_11
 } tlightymode;
 
-
 class lightyswitch 
 {
   public:
@@ -44,10 +43,6 @@ class lightyswitch
       if (mMode==kls_switch_enabled && changed())
         {
           updatelightsauto();
-          if (ison())
-            mBuz.playsong(6);
-          else
-            mBuz.playsong(7);
         }
     }
 
@@ -55,16 +50,6 @@ class lightyswitch
     bool ison() const
     {
         return mSwitch.ison();
-    }
-
-    void Enable() 
-    {
-      TurnLightsOn();
-    }
-
-    void ShutDown()
-    {
-      TurnLightsOff();
     }
 
     void TurnLightsOff()

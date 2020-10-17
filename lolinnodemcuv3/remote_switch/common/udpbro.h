@@ -1,7 +1,7 @@
 #ifndef __BUFFERBUDDY_H
 #define __BUFFERBUDDY_H
 
-#include <buf.h>
+#include <jbuf.h>
 #include <WiFiUdp.h>
 
 // thin wrapper on WiFiUDP.
@@ -38,9 +38,9 @@ class udpbro
             return true;
         }
 
-        const buf & getBuf() {return mBuf;}
+        const jbuf & getBuf() {return mBuf;}
 
-        bool send(const buf & b, IPAddress ip, uint16_t port)
+        bool send(const jbuf & b, IPAddress ip, uint16_t port=localUdpPort)
         {
             mUDP.beginPacket(ip,port);
             size_t bytesWritten = mUDP.write(b._getBufR(),b._getLen());
@@ -49,12 +49,13 @@ class udpbro
             return (bytesWritten==b._getLen());
         }
 
+        IPAddress getRemoteAddress() {return mUDP.remoteIP();}
 
     private:
         WiFiUDP mUDP;
-        const unsigned int localUdpPort = 9999;  // local port to listen on 
+        static const unsigned int localUdpPort = 9999;  // local port to listen on 
 
-        buf mBuf;
+        jbuf mBuf;
 };
 
 
