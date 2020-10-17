@@ -10,6 +10,7 @@
 #include <jwifiota.h>
 #include <jbuf.h>
 #include <jrgbled.h>
+#include <jrelay.h>
 
 /*
 
@@ -18,10 +19,11 @@ Built with PlatformIO in Visual Studio Code.
 */
 
 udpbro gUDP;
-jwifiota wifiota("ESP8266 Aux Listener, Version 0.02");
+jwifiota wifiota("ESP8266 Aux Listener, Version 0.04");
 const IPAddress kControllerIP(10,10,10,200);
 
 jrgbled gLed(4,0,2); // D2, D3, D4
+jrelay gRelay(14); // D5
 
 
 void setup()
@@ -32,19 +34,22 @@ void setup()
   wifiota.setup();
   if (!gUDP.setup())
       exit(-1);
+
+  gLed.setup();
+  gRelay.setup();
 }
 
 void power(bool on)
 {
-
+  gRelay.set(!on); // we're using the Normally Open connection (D5 high at boot)
 }
 
 void confirmstatus(bool status)
 {
-    // confirm with server our current status.
-    jbuf rbuf;
-    rbuf.setBool(kStat_Power, status);
-    gUDP.send(rbuf,kControllerIP);
+  // confirm with server our current status.
+  jbuf rbuf;
+  rbuf.setBool(kStat_Power, status);
+  gUDP.send(rbuf,kControllerIP);
 }
 
 static const int kFadems = 4000;
@@ -60,11 +65,11 @@ void loop()
   if (firstrun)
   {
     gLed.setRGB255(255,0,0);
-    delay(333);
+    delay(200);
     gLed.setRGB255(0,255,0);
-    delay(333);
+    delay(200);
     gLed.setRGB255(0,0,255);
-    delay(333);
+    delay(200);
     gLed.setRGB255(255,0,0);
 
 
@@ -83,7 +88,6 @@ void loop()
     }
     else
     { // nice LED stuff.
-
       float stepnum = ((mOffTime-millis())/kFadeStepSize); // range (50..0 in 60 steps)
       gLed.setRGBh((int)(400.0*stepnum/kFadeSteps),(int)(80.0*stepnum/kFadeSteps),0);
     }
@@ -101,7 +105,7 @@ void loop()
         bool turnon=b.getBool();
         Serial.printf("UDP Message: CMD_POWER, %s\n", turnon ? "ON" : "OFF");
 
-        turnon ? gLed.setRGB255(0,0,100) : gLed.setRGB255(100,20,0);
+        turnon ? gLed.setRGB255(0,100,0) : gLed.setRGB255(100,20,0);
         power(turnon);
         confirmstatus(turnon);
         shuttingdown=false; //we're alive again!
