@@ -74,7 +74,10 @@ class auxswitch : protected lightyswitch
     void sendcmd()
     {
         jbuf buf;
-        buf.setBool(kCmd_Power,mPower);
+        if (mShutdown)
+            buf.setIDOnly(kCmd_Shutdown);
+        else
+            buf.setBool(kCmd_Power,mPower);
         mUDP->send(buf,mIP);
     }
 

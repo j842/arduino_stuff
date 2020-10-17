@@ -9,8 +9,9 @@ typedef enum
     kNone = 0,
     kMessage,
     kCmd_Power, // server sets client's power state. bool for on/off.
-    kStat_Power, // client reports current power state. bool for on/off
-    kReq_Power, // client requests power state from server.
+    kStat_Power, // client reports current power state. bool for on/off.
+    kReq_Power, // client requests power state from server. No payload.
+    kCmd_Shutdown, // server requests client shuts down. No payload.
 } tID;
 
 typedef enum 
@@ -86,6 +87,13 @@ class jbuf
             int i;
             memcpy(&i, &mBytes[kHeaderLen], sizeof(int));
             return i;
+        }
+
+        void setIDOnly(tID bufID)
+        {
+            setID(bufID);
+            setPayloadType(kNoPayload);
+            setPayloadLen(0);
         }
 
     public:

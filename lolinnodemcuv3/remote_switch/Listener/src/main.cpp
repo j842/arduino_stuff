@@ -34,26 +34,61 @@ void setup()
       exit(-1);
 }
 
+void power(bool on)
+{
+
+}
+
+void confirmstatus(bool status)
+{
+    // confirm with server our current status.
+    jbuf rbuf;
+    rbuf.setBool(kStat_Power, status);
+    gUDP.send(rbuf,kControllerIP);
+}
+
+static const int kFadems = 4000;
+static const int kFadeSteps = 80;
+static const int kFadeStepSize = kFadems/kFadeSteps;
+
 void loop()
 {
   static bool firstrun=true;
+  static bool shuttingdown=false;
+  static unsigned long mOffTime=0;
 
   if (firstrun)
   {
-    gLed.setRGB(255,0,0);
+    gLed.setRGB255(255,0,0);
     delay(333);
-    gLed.setRGB(0,255,0);
+    gLed.setRGB255(0,255,0);
     delay(333);
-    gLed.setRGB(0,0,255);
+    gLed.setRGB255(0,0,255);
     delay(333);
-    gLed.setRGB(255,0,0);
+    gLed.setRGB255(255,0,0);
 
 
     firstrun = false;
     jbuf rbuf;
-    rbuf.setBool(kReq_Power, true);
+    rbuf.setIDOnly(kReq_Power);
     gUDP.send(rbuf,kControllerIP);
   }
+
+  if (shuttingdown)
+  {
+    if (millis()>mOffTime)
+    {
+      gLed.setRGB255(0,0,0); // off
+      shuttingdown=false; //already shut down :-)
+    }
+    else
+    { // nice LED stuff.
+
+      float stepnum = ((mOffTime-millis())/kFadeStepSize); // range (50..0 in 60 steps)
+      gLed.setRGBh((int)(400.0*stepnum/kFadeSteps),(int)(80.0*stepnum/kFadeSteps),0);
+    }
+  }
+
 
   if (gUDP.loop()) // has UDP received packet.
   {
@@ -66,12 +101,20 @@ void loop()
         bool turnon=b.getBool();
         Serial.printf("UDP Message: CMD_POWER, %s\n", turnon ? "ON" : "OFF");
 
-        turnon ? gLed.setRGB(0,0,100) : gLed.setRGB(100,20,0);
+        turnon ? gLed.setRGB255(0,0,100) : gLed.setRGB255(100,20,0);
+        power(turnon);
+        confirmstatus(turnon);
+        shuttingdown=false; //we're alive again!
+        break;
+      }
+      case kCmd_Shutdown:
+      {
+        Serial.println("Server requests we shut down!");
 
-        jbuf rbuf;
-        rbuf.setBool(kStat_Power, turnon);
-        gUDP.send(rbuf,kControllerIP);
-
+        power(false);
+        confirmstatus(false);
+        shuttingdown = true;
+        mOffTime = millis()+kFadems; // 4 sec off time.
         break;
       }
       default:
