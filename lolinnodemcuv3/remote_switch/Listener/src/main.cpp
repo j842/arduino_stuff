@@ -9,6 +9,7 @@
 #include <udpbro.h>
 #include <jwifiota.h>
 #include <jbuf.h>
+#include <jrgbled.h>
 
 /*
 
@@ -16,32 +17,21 @@ Built with PlatformIO in Visual Studio Code.
 
 */
 
-udpbro udp;
+udpbro gUDP;
 jwifiota wifiota("ESP8266 Aux Listener, Version 0.01");
-
-
-// based on guide here:
-// https://medium.com/@loginov_rocks/quick-start-with-nodemcu-v3-esp8266-arduino-ecosystem-and-platformio-ide-b8415bf9a038
-
 const IPAddress kControllerIP(10,10,10,200);
+
+jrgbled gLed(4,0,2); // D2, D3, D4
 
 
 void setup()
 { // connect via wifi to set up credentials (temporarily creates an access point to connect to)
-  // pinMode(LED_RED, OUTPUT);
-  // pinMode(LED_BLUE, OUTPUT);
-
-  // ledOn(LED_RED);
 
   Serial.begin(115200);
-  // WiFiManager wifiManager;
-  // wifiManager.autoConnect("NodeMCU Setup");
-  // Serial.println("WiFi Connected!");
 
   wifiota.setup();
-  if (!udp.setup())
+  if (!gUDP.setup())
       exit(-1);
-
 }
 
 void loop()
@@ -50,15 +40,24 @@ void loop()
 
   if (firstrun)
   {
+    gLed.setRGB(255,0,0);
+    delay(1000);
+    gLed.setRGB(0,255,0);
+    delay(1000);
+    gLed.setRGB(0,0,255);
+    delay(1000);
+    gLed.setRGB(100,100,100);
+
+
     firstrun = false;
     jbuf rbuf;
     rbuf.setBool(kReq_Power, true);
-    udp.send(rbuf,kControllerIP);
+    gUDP.send(rbuf,kControllerIP);
   }
 
-  if (udp.loop()) // has UDP received packet.
+  if (gUDP.loop()) // has UDP received packet.
   {
-    const jbuf & b( udp.getBuf());
+    const jbuf & b( gUDP.getBuf());
 
     switch (b.getID())
     {
@@ -67,25 +66,17 @@ void loop()
         bool turnon=b.getBool();
         Serial.printf("UDP Message: CMD_POWER, %s\n", turnon ? "ON" : "OFF");
 
+        turnon ? gLed.setRGB(0,0,100) : gLed.setRGB(100,20,0);
+
         jbuf rbuf;
         rbuf.setBool(kStat_Power, turnon);
-        udp.send(rbuf,kControllerIP);
+        gUDP.send(rbuf,kControllerIP);
 
         break;
       }
       default:
         Serial.println("Unknown UDP Message.");
     }
-    // std::string ReceivedMessage( b.getString() );
-    // Serial.printf("UDP message: %s\n", ReceivedMessage.c_str());
-
-
-    // if (tolower(ReceivedMessage[0])=='r')
-    //   ledOn(LED_RED);
-    // else if (tolower(ReceivedMessage[0]=='b'))
-    //   ledOn(LED_BLUE);
-    // else if (tolower(ReceivedMessage[0]=='c'))
-    //   cool();
   }
 
   wifiota.loop();
