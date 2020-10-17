@@ -18,7 +18,7 @@ Built with PlatformIO in Visual Studio Code.
 */
 
 udpbro gUDP;
-jwifiota wifiota("ESP8266 Aux Listener, Version 0.01");
+jwifiota wifiota("ESP8266 Aux Listener, Version 0.02");
 const IPAddress kControllerIP(10,10,10,200);
 
 jrgbled gLed(4,0,2); // D2, D3, D4
@@ -41,12 +41,12 @@ void loop()
   if (firstrun)
   {
     gLed.setRGB(255,0,0);
-    delay(1000);
+    delay(333);
     gLed.setRGB(0,255,0);
-    delay(1000);
+    delay(333);
     gLed.setRGB(0,0,255);
-    delay(1000);
-    gLed.setRGB(100,100,100);
+    delay(333);
+    gLed.setRGB(255,0,0);
 
 
     firstrun = false;
