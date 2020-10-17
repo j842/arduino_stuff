@@ -63,18 +63,15 @@ void setup()
 
 void loop()
 {
-//  static flashfun ff(gBossMain,gSwitches,jbuz);
-  static bool mPrevBossMain = !(gBossMain.ison());
+  static bool firstloop = true;
 
   jbuz.loop();
   wifiota.loop();
 
+  bool prevBossMain = gBossMain.ison();
   gBossMain.loop();
-  if (gBossMain.ison() != mPrevBossMain)
-  {
-    mPrevBossMain = gBossMain.ison();
+  if (gBossMain.ison() != prevBossMain || firstloop)
     for (auto & s : gSwitches) gBossMain.ison() ? s.Enable() : s.ShutDown();
-  }
 
   for (auto & s: gSwitches) s.loop();
 
@@ -88,5 +85,5 @@ void loop()
         s.handleUDP(b);
   }
 
-  //ff.loop();
+  firstloop=false;
 }
