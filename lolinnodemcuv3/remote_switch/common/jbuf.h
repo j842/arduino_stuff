@@ -50,7 +50,7 @@ class jbuf
         }
         std::string getString() const
         {
-            if (getPayloadType()!=kString) return "Error - buffer payload is not a sting.";
+            if (getPayloadType()!=kString) return "Error - buffer payload is not a string.";
             if (getPayloadLen()==0) return "";
 
             char * s = new char[getPayloadLen()+1];

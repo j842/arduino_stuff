@@ -8,6 +8,7 @@
 
 #include <udpbro.h>
 #include <jwifiota.h>
+#include <jbuf.h>
 
 /*
 
@@ -16,25 +17,12 @@ Built with PlatformIO in Visual Studio Code.
 */
 
 udpbro udp;
-jwifiota wifiota("ESP8266 Auxiliary, Version 0.01");
-
+jwifiota wifiota("ESP8266 Aux Listener, Version 0.01");
 
 
 // based on guide here:
 // https://medium.com/@loginov_rocks/quick-start-with-nodemcu-v3-esp8266-arduino-ecosystem-and-platformio-ide-b8415bf9a038
 
-#define LED_RED D1
-#define LED_BLUE D0
-
-
-void ledOn(uint8_t LED)
-{
-  digitalWrite(LED, HIGH);
-}
-void ledOff(uint8_t LED)
-{
-  digitalWrite(LED, LOW);
-}
 
 
 void setup()
@@ -50,8 +38,6 @@ void setup()
   // Serial.println("WiFi Connected!");
 
   wifiota.setup();
-
-
   if (!udp.setup())
       exit(-1);
 
@@ -61,10 +47,21 @@ void loop()
 {
   if (udp.loop()) // has UDP received packet.
   {
-    const buf & b( udp.getBuf());
+    const jbuf & b( udp.getBuf());
 
-    std::string ReceivedMessage( b.getString() );
-    Serial.printf("UDP message: %s\n", ReceivedMessage.c_str());
+    switch (b.getID())
+    {
+      case kCmd_Power:
+        Serial.printf("UDP Message: CMD_POWER, %s\n", b.getBool() ? "ON" : "OFF");
+        break;
+
+      default:
+        Serial.println("Unknown UDP Message.");
+
+    }
+    // std::string ReceivedMessage( b.getString() );
+    // Serial.printf("UDP message: %s\n", ReceivedMessage.c_str());
+
 
     // if (tolower(ReceivedMessage[0])=='r')
     //   ledOn(LED_RED);
