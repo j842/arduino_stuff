@@ -111,6 +111,12 @@ void displayTimeLoop()
 
 // -------------------------------------------------------------------------------
 
+// states to send to master:
+// 7am  - On (all auxiliaries available)
+// 8pm  - Jack in bed (Jack's forced off)
+// 10pm - Tom in bed (Tom's bedroom available, everything else forced off)
+// 11pm - Tom asleep (Everything forced off)
+
 
 void loop() 
 {
