@@ -1,12 +1,6 @@
 
 void scan()
 {
-  static bool alreadyrun=false;
-
-  if (alreadyrun)
-    return;
-  alreadyrun=true;
-
    byte error, address;
   int nDevices;
   Serial.println("Scanning...");

@@ -10,8 +10,9 @@
 
 #include <udpbro.h>
 #include <jwifiota.h>
+#include <switch4.h>
 
-
+#include <iostream>
 
 jwifiota wifiota("ESP8266 Clock Master, Version 0.01");
 udpbro gUDP;
@@ -30,6 +31,8 @@ const bool kSetClock = false;
 
 LiquidCrystal_I2C lcd = LiquidCrystal_I2C(PCF8574_ADDR_A21_A11_A01); // 0x27
 RTC_DS1307 RTC;     // Setup an instance of DS1307 naming it RTC
+
+switch4 gSwitch(14,12,13,15); // D5,D6,D7,D8
 
 // -------------------------------------------------------------------------------
 
@@ -62,6 +65,8 @@ void setup()
   lcd.backlight();
   RTC.begin();  // Init RTC
 
+  gSwitch.setup();
+
   setdatetime();
 
   lcd.setCursor(0, 0);
@@ -73,53 +78,34 @@ void setup()
 
 // -------------------------------------------------------------------------------
 
+
+void lcdmessage(std::string l1, std::string l2)
+{
+  lcd.clear();
+  lcd.setCursor(0,0);
+  lcd.print(l1.c_str());
+  lcd.setCursor(0,1);
+  lcd.print(l2.c_str());
+}
+
+std::string tostr(int x) 
+{
+  char s[10];
+  sprintf(s,"%02d",x);
+  return s;
+}
+
+static unsigned long displaytime = millis();
+static std::string gModeStr="<starting up>";
 void displayTimeLoop()
 {
-  static unsigned long displaytime = millis();
-
   if (millis()>displaytime)
   {
-    displaytime = millis()+1000;
+    displaytime = millis()+1000; // update every second.
 
-    DateTime now = RTC.now();
-  
-    Serial.print(now.day(), DEC);
-    Serial.print('/');
-    Serial.print(now.month(), DEC);
-    Serial.print('/');
-    Serial.print(now.year(), DEC);
-    Serial.print(' ');
-    Serial.print(now.hour(), DEC);
-    Serial.print(':');
-    if (now.minute()<10) Serial.print("0");
-    Serial.print(now.minute(), DEC);
-    Serial.print(':');
-    if (now.second()<10) Serial.print("0");
-    Serial.print(now.second(), DEC);
-    Serial.println();
-  
-    lcd.clear();
-
-    lcd.setCursor(0, 0);
-    lcd.print("Date: ");
-    lcd.setCursor(0, 1);
-    lcd.print("Time: ");
-    
-    lcd.setCursor(6, 0);
-    lcd.print(now.day(), DEC);
-    lcd.print("/");
-    lcd.print(now.month(), DEC);
-    lcd.print("/");
-    lcd.print(now.year(), DEC);
-  
-    lcd.setCursor(6, 1);
-    lcd.print(now.hour(), DEC);
-    lcd.print(":");
-    if (now.minute()<10) lcd.print("0");
-    lcd.print(now.minute(), DEC);
-    lcd.print(":");
-    if (now.second()<10) lcd.print("0");
-    lcd.print(now.second(), DEC); 
+    DateTime now = RTC.now(); // also has day,month,year
+    std::string l2 = "    " + tostr(now.hour()) + ":" + tostr(now.minute()) + ":" + tostr(now.second());
+    lcdmessage(gModeStr,l2);
   }
 }
 
@@ -128,15 +114,54 @@ void displayTimeLoop()
 
 void loop() 
 {
-  if (kScanI2C)
-    scan();
-  
+  static tSwitch4State state = kState_Undefined;
+  static bool firstrun = true;
+
+  if (firstrun)
+  {
+    firstrun=false;
+
+    if (kScanI2C)
+      scan();
+  }
+
+
   wifiota.loop();
+
+  gSwitch.loop();  
 
   if (gUDP.loop()) // has UDP received packet.
   {
     const jbuf & b( gUDP.getBuf());
   }
 
-  displayTimeLoop();
+  if (gSwitch.getSate()!=state)
+  {
+    state=gSwitch.getSate();
+    switch (state)
+    {
+      case kState_Auto:
+        lcdmessage("Set to fully","automatic.");
+        gModeStr = "Automatic";
+        break;
+      case kState_TomInBed:
+        gModeStr = "Manual: in bed";
+        lcdmessage("Manual mode:","TOM IN BED");
+        break;
+      case kState_TomAsleep:
+        gModeStr = "Manual: asleep";
+        lcdmessage("Manual mode:","TOM ASLEEP zzz");
+        break;
+      case kState_TomAwake:
+        gModeStr = "Manual: daytime";
+        lcdmessage("Manual mode:","DAYTIME! ALL ON.");
+        break;
+      default:
+        lcdmessage("ERROR","Bad state.");
+    }
+
+    displaytime = millis()+2000;
+  } 
+  else
+    displayTimeLoop();
 }
