@@ -36,7 +36,7 @@ class jbuzzer
         finish(); 
       }
 
-    void playsong(int s)
+    void playsong(unsigned int s)
     {
       note = 0;
       waitto = 0;
@@ -216,9 +216,9 @@ class jbuzzer
   }
 
   private:
-    int melody;
+    unsigned int melody;
     bool playing;
-    int note;
+    unsigned int note;
     int mBuzzerPin;
     unsigned long waitto;
 
