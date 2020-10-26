@@ -1,20 +1,33 @@
 #include <Arduino.h>
 
-#include <ESP8266WiFi.h>
+// #include <ESP8266WiFi.h>
+// #include <WiFiUdp.h>
+
+#include <FS.h>
+#include <Update.h>
+#include <WiFi.h>
 #include <WiFiUdp.h>
 
+
 #include <Wire.h> // Library for I2C communication
-#include <SPI.h>  // not used here, but needed to prevent a RTClib compile error
-#include "RTClib.h"
+//#include <SPI.h>  // not used here, but needed to prevent a RTClib compile error w/ ESP8266
+#include <RTClib.h>
+
+
+// see https://github.com/espressif/arduino-esp32/issues/4
+// need to add the following to the LiquidCrystal_I2C.h library
+// #define analogWrite ledcWrite
 #include <LiquidCrystal_I2C.h> // Library for LCD
 
 #include <udpbro.h>
 #include <jwifiota.h>
 #include <switch4.h>
+#include <jbuzzer.h>
+#include <jswitch.h>
 
 #include <iostream>
 
-jwifiota wifiota("ESP8266 Clock Master, Version 0.01");
+jwifiota wifiota("ESP32 Clock Master, Version 0.02");
 udpbro gUDP;
 
 const bool kScanI2C = false;
@@ -29,10 +42,15 @@ done
 const bool kSetClock = false;
 
 
+// connected via the Wire SCL and SDA pins (GPIO 22, 21)
 LiquidCrystal_I2C lcd = LiquidCrystal_I2C(PCF8574_ADDR_A21_A11_A01); // 0x27
+
 RTC_DS1307 RTC;     // Setup an instance of DS1307 naming it RTC
 
-switch4 gSwitch(14,12,13,15); // D5,D6,D7,D8
+switch4 gSwitch4(26,25,33,32); // 35,34,39,36 input only pins don't support pull up/down
+jswitch gSwitch(17);
+
+jbuzzer gBuz(27);
 
 // -------------------------------------------------------------------------------
 
@@ -65,13 +83,16 @@ void setup()
   lcd.backlight();
   RTC.begin();  // Init RTC
 
+  gSwitch4.setup();
   gSwitch.setup();
+  gBuz.setup();
 
   setdatetime();
 
   lcd.setCursor(0, 0);
   lcd.print("Real Time Clock");
-  // lcd.clear();
+
+  gBuz.playsong(1);
 }
 
 #include "scan.h"
@@ -81,6 +102,13 @@ void setup()
 
 void lcdmessage(std::string l1, std::string l2)
 {
+  static std::string ol1, ol2;
+
+  if (ol1.compare(l1)==0 && ol2.compare(l2)==0)
+    return;
+  ol1=l1;
+  ol2=l2;
+
   lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(l1.c_str());
@@ -133,41 +161,51 @@ void loop()
 
 
   wifiota.loop();
+  gSwitch4.loop();  
+  gSwitch.loop();
+  gBuz.loop();
+  bool gotUDPPacket = gUDP.loop();
 
-  gSwitch.loop();  
 
-  if (gUDP.loop()) // has UDP received packet.
+  if (gotUDPPacket) // has UDP received packet.
   {
     const jbuf & b( gUDP.getBuf());
   }
 
-  if (gSwitch.getSate()!=state)
+  if (gSwitch.ison())
   {
-    state=gSwitch.getSate();
-    switch (state)
+    if (gSwitch4.getSate()!=state)
     {
-      case kState_Auto:
-        lcdmessage("Set to fully","automatic.");
-        gModeStr = "Automatic";
-        break;
-      case kState_TomInBed:
-        gModeStr = "Manual: in bed";
-        lcdmessage("Manual mode:","TOM IN BED");
-        break;
-      case kState_TomAsleep:
-        gModeStr = "Manual: asleep";
-        lcdmessage("Manual mode:","TOM ASLEEP zzz");
-        break;
-      case kState_TomAwake:
-        gModeStr = "Manual: daytime";
-        lcdmessage("Manual mode:","DAYTIME! ALL ON.");
-        break;
-      default:
-        lcdmessage("ERROR","Bad state.");
-    }
+      state=gSwitch4.getSate();
+      switch (state)
+      {
+        case kState_Auto:
+          lcdmessage("Set to fully","automatic.");
+          gModeStr = "Automatic";
+          break;
+        case kState_TomInBed:
+          gModeStr = "Manual: in bed";
+          lcdmessage("Manual mode:","TOM IN BED");
+          break;
+        case kState_TomAsleep:
+          gModeStr = "Manual: asleep";
+          lcdmessage("Manual mode:","TOM ASLEEP zzz");
+          break;
+        case kState_TomAwake:
+          gModeStr = "Manual: daytime";
+          lcdmessage("Manual mode:","DAYTIME! ALL ON.");
+          break;
+        default:
+          lcdmessage("ERROR","Bad state.");
+      }
 
-    displaytime = millis()+2000;
-  } 
-  else
-    displayTimeLoop();
+      displaytime = millis()+2000;
+    } 
+    else
+      displayTimeLoop();
+  } else
+  {
+    lcdmessage("OFF","Master off");
+  }
+  
 }

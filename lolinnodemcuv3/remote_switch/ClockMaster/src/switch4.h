@@ -15,7 +15,7 @@ class switch4
 {
     public:
         switch4(int s1pin, int s2pin, int s3pin, int s4pin) :
-            mState(kState_Undefined), mHasChanged(true)
+            mState(kState_Undefined)
         {
             mPins.push_back(s1pin);
             mPins.push_back(s2pin);
@@ -43,11 +43,6 @@ class switch4
             return mState;
         }
 
-        bool hasChanged()
-        {
-            return mHasChanged;
-        }
-
         tSwitch4State getSate()
         {
             return mState;
@@ -58,7 +53,6 @@ class switch4
     private:
         std::vector<int> mPins;
         tSwitch4State mState;
-        bool mHasChanged;
 };
 
 
