@@ -21,11 +21,10 @@
 
 #include <udpbro.h>
 #include <jwifiota.h>
-#include <switch4.h>
 #include <jbuzzer.h>
-#include <jswitch.h>
 
-#include <iostream>
+#include <overrideswitch.h>
+
 
 jwifiota wifiota("ESP32 Clock Master, Version 0.02");
 udpbro gUDP;
@@ -47,8 +46,9 @@ LiquidCrystal_I2C lcd = LiquidCrystal_I2C(PCF8574_ADDR_A21_A11_A01); // 0x27
 
 RTC_DS1307 RTC;     // Setup an instance of DS1307 naming it RTC
 
-switch4 gSwitch4(26,25,33,32); // 35,34,39,36 input only pins don't support pull up/down
-jswitch gSwitch(17);
+overrideswitch gSwitch(17,25,26,33,32);
+// switch4 gSwitch4(25,26,33,32); // 35,34,39,36 input only pins don't support pull up/down
+// jswitch gSwitch(17);
 
 jbuzzer gBuz(27);
 
@@ -83,22 +83,27 @@ void setup()
   lcd.backlight();
   RTC.begin();  // Init RTC
 
-  gSwitch4.setup();
   gSwitch.setup();
   gBuz.setup();
 
   setdatetime();
 
+  lcd.clear();
   lcd.setCursor(0, 0);
-  lcd.print("Real Time Clock");
+  lcd.print("Hello!");
 
-  gBuz.playsong(1);
+  gBuz.playsong(6);
 }
 
 #include "scan.h"
 
 // -------------------------------------------------------------------------------
 
+void padTo(std::string &str, const size_t num=16, const char paddingChar = ' ')
+{
+    if(num > str.size())
+        str.insert(0, num - str.size(), paddingChar);
+}
 
 void lcdmessage(std::string l1, std::string l2)
 {
@@ -109,32 +114,14 @@ void lcdmessage(std::string l1, std::string l2)
   ol1=l1;
   ol2=l2;
 
-  lcd.clear();
+  padTo(l1);
+  padTo(l2);
+          
+  //lcd.clear();
   lcd.setCursor(0,0);
   lcd.print(l1.c_str());
   lcd.setCursor(0,1);
   lcd.print(l2.c_str());
-}
-
-std::string tostr(int x) 
-{
-  char s[10];
-  sprintf(s,"%02d",x);
-  return s;
-}
-
-static unsigned long displaytime = millis();
-static std::string gModeStr="<starting up>";
-void displayTimeLoop()
-{
-  if (millis()>displaytime)
-  {
-    displaytime = millis()+1000; // update every second.
-
-    DateTime now = RTC.now(); // also has day,month,year
-    std::string l2 = "    " + tostr(now.hour()) + ":" + tostr(now.minute()) + ":" + tostr(now.second());
-    lcdmessage(gModeStr,l2);
-  }
 }
 
 // -------------------------------------------------------------------------------
@@ -148,7 +135,6 @@ void displayTimeLoop()
 
 void loop() 
 {
-  static tSwitch4State state = kState_Undefined;
   static bool firstrun = true;
 
   if (firstrun)
@@ -161,7 +147,6 @@ void loop()
 
 
   wifiota.loop();
-  gSwitch4.loop();  
   gSwitch.loop();
   gBuz.loop();
   bool gotUDPPacket = gUDP.loop();
@@ -172,40 +157,10 @@ void loop()
     const jbuf & b( gUDP.getBuf());
   }
 
-  if (gSwitch.ison())
-  {
-    if (gSwitch4.getSate()!=state)
-    {
-      state=gSwitch4.getSate();
-      switch (state)
-      {
-        case kState_Auto:
-          lcdmessage("Set to fully","automatic.");
-          gModeStr = "Automatic";
-          break;
-        case kState_TomInBed:
-          gModeStr = "Manual: in bed";
-          lcdmessage("Manual mode:","TOM IN BED");
-          break;
-        case kState_TomAsleep:
-          gModeStr = "Manual: asleep";
-          lcdmessage("Manual mode:","TOM ASLEEP zzz");
-          break;
-        case kState_TomAwake:
-          gModeStr = "Manual: daytime";
-          lcdmessage("Manual mode:","DAYTIME! ALL ON.");
-          break;
-        default:
-          lcdmessage("ERROR","Bad state.");
-      }
+  // handle change of auto/manual switch.
 
-      displaytime = millis()+2000;
-    } 
-    else
-      displayTimeLoop();
-  } else
-  {
-    lcdmessage("OFF","Master off");
-  }
-  
+  std::string s1,s2; 
+  DateTime now = RTC.now(); // also has day,month,year
+  if (gSwitch.getMessage(s1,s2,now))
+    lcdmessage(s1,s2);
 }

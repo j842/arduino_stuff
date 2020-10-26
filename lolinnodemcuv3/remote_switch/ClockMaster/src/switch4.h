@@ -3,10 +3,10 @@
 
 typedef enum
 {
-    kState_Auto=0,
+    kState_JackInBed=0,
     kState_TomInBed=1,
     kState_TomAsleep=2,
-    kState_TomAwake=3,
+    kState_AllOn=3,
     kState_Undefined=4,
 } tSwitch4State;
 
@@ -43,12 +43,10 @@ class switch4
             return mState;
         }
 
-        tSwitch4State getSate()
+        tSwitch4State getState()
         {
             return mState;
         }
-
-
 
     private:
         std::vector<int> mPins;
