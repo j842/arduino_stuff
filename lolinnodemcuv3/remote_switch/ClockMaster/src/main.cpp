@@ -20,7 +20,7 @@
 #include <overrideswitch.h>
 
 
-jwifiota wifiota("ESP32 Clock Master, Version 0.02");
+jwifiota wifiota("ESP32 Clock Master, Version 0.05");
 udpbro gUDP;
 
 const bool kScanI2C = false;
@@ -101,10 +101,12 @@ void loop()
   }
 
   wifiota.loop();
-  bool gotUDPPacket = gUDP.loop();
-  if (gotUDPPacket) // has UDP received packet.
+  bool gotUDPRequest = false;
+  if (gUDP.loop()) // has UDP received packet.
   {
     const jbuf & b( gUDP.getBuf());
+    if (b.getID()==kReq_ClockMaster)
+      gotUDPRequest = true;
   }
 
 
@@ -116,7 +118,18 @@ void loop()
     nextcheck = millis() + 1000;
   }
 
-  gSwitch.loop(now);
+  static tSwitch4State prevstate = kState_Undefined;
+  tSwitch4State newstate = gSwitch.loop(now);
+
+  if (newstate != prevstate || gotUDPRequest)
+  { // send the state to the client!
+    jbuf b;
+    b.setInt(kCmd_ClockMaster,static_cast<int>(newstate));
+    gUDP.send(b,IPAddress(10,10,10,200));
+
+    prevstate = newstate;
+  }
+
 
   gBuz.loop();
 }

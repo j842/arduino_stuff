@@ -32,11 +32,12 @@ http:10.10.10.200/update to update firmware.
 */
 
 udpbro udp;
-jwifiota wifiota("ESP32 Controller, Version 0.21");
+jwifiota wifiota("ESP32 Controller, Version 0.25");
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
 bossmain gBossMain(27,16,21,jbuz);
 std::vector<auxswitch> gSwitches;
+std::vector<bool> gOverride = {false,false,false,false};
 
 void setup()
 {
@@ -61,6 +62,15 @@ void setup()
   gBossMain.setup();
 }
 
+void applybossmain()
+{
+  for (int i=0;i<gSwitches.size();++i)
+    if (gOverride[i]==false && gBossMain.ison())
+      gSwitches[i].Enable();
+    else
+      gSwitches[i].ShutDown();
+}
+
 void loop()
 {
   static bool firstloop = true;
@@ -68,10 +78,17 @@ void loop()
   jbuz.loop();
   wifiota.loop();
 
+  if (firstloop)
+    { // request the clockmaster gives us our mode :-)
+      jbuf b;
+      b.setIDOnly(kReq_ClockMaster);
+      udp.send(b,IPAddress(10,10,10,220));
+    }
+
   bool prevBossMain = gBossMain.ison();
   gBossMain.loop();
   if (gBossMain.ison() != prevBossMain || firstloop)
-    for (auto & s : gSwitches) gBossMain.ison() ? s.Enable() : s.ShutDown();
+    applybossmain();
 
   for (auto & s: gSwitches) s.loop();
 
@@ -83,6 +100,29 @@ void loop()
     for (auto & s : gSwitches)
       if (s.getIP()==remoteaddr)
         s.handleUDP(b);
+
+    if (b.getID()==kCmd_ClockMaster)
+    { // clockmaster override!
+      tSwitch4State state = static_cast<tSwitch4State>(b.getInt());
+      jbuz.playsong(8);
+
+      switch(state)
+      {
+        case kState_AllOn:
+          gOverride = {false,false,false,false}; break;
+        case kState_AllOff:
+          gOverride = {true,true,true,true}; break;
+        case kState_JackInBed:
+          gOverride = {false,false,true,false}; break;
+        case kState_TomInBed:
+          gOverride = {true,false,true,true}; break;
+
+        default:
+          gOverride = {false,false,false,false}; break;
+      }
+
+      applybossmain();
+    }
   }
 
   firstloop=false;

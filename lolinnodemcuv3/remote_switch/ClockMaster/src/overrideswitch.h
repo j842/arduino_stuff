@@ -6,16 +6,7 @@
 #include <jrotaryswitch.h>
 #include <jswitch.h>
 #include <j16x2lcd.h>
-
-typedef enum
-{
-    kState_JackInBed=0,
-    kState_TomInBed=1,
-    kState_AllOff=2,
-    kState_AllOn=3,
-    kState_Undefined=-1,
-} tSwitch4State;
-
+#include <jbuf.h>
 
 class overrideswitch
 {
@@ -36,7 +27,7 @@ class overrideswitch
             mSwitch4.setup();
         }
 
-        void loop(const DateTime & now)
+        tSwitch4State loop(const DateTime & now)
         {
             mLCD.loop();
             mSwitch1.loop();
@@ -46,6 +37,8 @@ class overrideswitch
             tSwitch4State state = getState(now);
             s.set(statename(state,!mSwitch1.ison()),totime(now));
             mLCD.message(s);
+
+            return state;
         }
 
     private:
@@ -78,7 +71,36 @@ class overrideswitch
             if (mSwitch1.ison()) 
                 return switch4state();
             // determine based on time.
-            return kState_JackInBed;
+            switch (now.hour())
+            {
+                case 23:
+                case 0: 
+                case 1:
+                case 2:
+                case 3:
+                case 4:
+                case 5:
+                case 6:  return kState_AllOff;
+
+                case 20: return kState_JackInBed;
+
+                case 21: 
+                case 22: return kState_TomInBed;
+
+                default: return kState_AllOn;
+            }
+
+
+            if (now.hour()<7 || now.hour()>=23) // before 7am or after 11pm
+                return kState_AllOff;
+            
+            if (now.hour()<20) // before 8pm
+                return kState_AllOn;
+            
+            if (now.hour()<21) // 8-9pm
+                return kState_JackInBed;
+
+            return kState_TomInBed;
         }
 
     private:

@@ -217,6 +217,14 @@ class jbuzzer
       {NOTE_C5, NOTE_B3},
       {8,8}
     ));
+
+  // 8
+    Melodies.push_back(cMelody(
+      "Bee Bee Boo",
+      {NOTE_C5, NOTE_C5, NOTE_B3},
+      {8,8,8}
+    ));
+    
   }
 
   private:
