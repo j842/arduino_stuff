@@ -16,7 +16,6 @@
 #include <udpbro.h>
 #include <jwifiota.h>
 #include <jbuzzer.h>
-#include <j16x2lcd.h>
 
 #include <overrideswitch.h>
 
@@ -39,7 +38,6 @@ RTC_DS1307 RTC;     // Setup an instance of DS1307 naming it RTC
 
 overrideswitch gSwitch(17,{25,26,33,32});
 jbuzzer gBuz(27);
-j16x2lcd gLCD;
 
 // -------------------------------------------------------------------------------
 
@@ -67,14 +65,12 @@ void setup()
   if (!gUDP.setup())
       exit(-1);
 
-  gLCD.setup();
   RTC.begin();  // Init RTC
 
   gSwitch.setup();
   gBuz.setup();
 
   setdatetime();
-
 
   gBuz.playsong(6);
 }
@@ -100,28 +96,27 @@ void loop()
   if (firstrun)
   {
     firstrun=false;
-
     if (kScanI2C)
       scan();
   }
 
-
   wifiota.loop();
-  gSwitch.loop();
-  gBuz.loop();
-  gLCD.loop();
   bool gotUDPPacket = gUDP.loop();
-
-
   if (gotUDPPacket) // has UDP received packet.
   {
     const jbuf & b( gUDP.getBuf());
   }
 
-  // handle change of auto/manual switch.
 
-  displaystrings s;
-  DateTime now = RTC.now(); // also has day,month,year
-  if (gSwitch.getMessage(s,now))
-    gLCD.message(s);
+  static unsigned long nextcheck = 0;
+  static DateTime now;
+  if (millis()>nextcheck)
+  { // update time every second.
+    now = RTC.now(); // also has day,month,year
+    nextcheck = millis() + 1000;
+  }
+
+  gSwitch.loop(now);
+
+  gBuz.loop();
 }

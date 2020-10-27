@@ -26,7 +26,7 @@ class jrotaryswitch
             }
         }
 
-        int getState()
+        int getState() const
         {
             return mState;
         }
