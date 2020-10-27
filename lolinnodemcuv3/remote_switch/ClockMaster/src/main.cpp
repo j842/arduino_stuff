@@ -13,15 +13,10 @@
 //#include <SPI.h>  // not used here, but needed to prevent a RTClib compile error w/ ESP8266
 #include <RTClib.h>
 
-
-// see https://github.com/espressif/arduino-esp32/issues/4
-// need to add the following to the LiquidCrystal_I2C.h library
-// #define analogWrite ledcWrite
-#include <LiquidCrystal_I2C.h> // Library for LCD
-
 #include <udpbro.h>
 #include <jwifiota.h>
 #include <jbuzzer.h>
+#include <j16x2lcd.h>
 
 #include <overrideswitch.h>
 
@@ -40,17 +35,11 @@ done
 
 const bool kSetClock = false;
 
-
-// connected via the Wire SCL and SDA pins (GPIO 22, 21)
-LiquidCrystal_I2C lcd = LiquidCrystal_I2C(PCF8574_ADDR_A21_A11_A01); // 0x27
-
 RTC_DS1307 RTC;     // Setup an instance of DS1307 naming it RTC
 
-overrideswitch gSwitch(17,25,26,33,32);
-// switch4 gSwitch4(25,26,33,32); // 35,34,39,36 input only pins don't support pull up/down
-// jswitch gSwitch(17);
-
+overrideswitch gSwitch(17,{25,26,33,32});
 jbuzzer gBuz(27);
+j16x2lcd gLCD;
 
 // -------------------------------------------------------------------------------
 
@@ -78,9 +67,7 @@ void setup()
   if (!gUDP.setup())
       exit(-1);
 
-  Wire.begin();
-  lcd.begin(16,2);
-  lcd.backlight();
+  gLCD.setup();
   RTC.begin();  // Init RTC
 
   gSwitch.setup();
@@ -88,9 +75,6 @@ void setup()
 
   setdatetime();
 
-  lcd.clear();
-  lcd.setCursor(0, 0);
-  lcd.print("Hello!");
 
   gBuz.playsong(6);
 }
@@ -99,30 +83,6 @@ void setup()
 
 // -------------------------------------------------------------------------------
 
-void padTo(std::string &str, const size_t num=16, const char paddingChar = ' ')
-{
-    if(num > str.size())
-        str.insert(0, num - str.size(), paddingChar);
-}
-
-void lcdmessage(std::string l1, std::string l2)
-{
-  static std::string ol1, ol2;
-
-  if (ol1.compare(l1)==0 && ol2.compare(l2)==0)
-    return;
-  ol1=l1;
-  ol2=l2;
-
-  padTo(l1);
-  padTo(l2);
-          
-  //lcd.clear();
-  lcd.setCursor(0,0);
-  lcd.print(l1.c_str());
-  lcd.setCursor(0,1);
-  lcd.print(l2.c_str());
-}
 
 // -------------------------------------------------------------------------------
 
@@ -149,6 +109,7 @@ void loop()
   wifiota.loop();
   gSwitch.loop();
   gBuz.loop();
+  gLCD.loop();
   bool gotUDPPacket = gUDP.loop();
 
 
@@ -159,8 +120,8 @@ void loop()
 
   // handle change of auto/manual switch.
 
-  std::string s1,s2; 
+  displaystrings s;
   DateTime now = RTC.now(); // also has day,month,year
-  if (gSwitch.getMessage(s1,s2,now))
-    lcdmessage(s1,s2);
+  if (gSwitch.getMessage(s,now))
+    gLCD.message(s);
 }

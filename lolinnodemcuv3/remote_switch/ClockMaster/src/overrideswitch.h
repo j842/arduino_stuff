@@ -3,21 +3,27 @@
 
 #include <iostream>
 
-#include <switch4.h>
+#include <jrotaryswitch.h>
 #include <jswitch.h>
+
+typedef enum
+{
+    kState_JackInBed=0,
+    kState_TomInBed=1,
+    kState_AllOff=2,
+    kState_AllOn=3,
+    kState_Undefined=-1,
+} tSwitch4State;
+
 
 class overrideswitch
 {
     public:
         overrideswitch(int switchpin,
-                        int rotary1pin,
-                        int rotary2pin,
-                        int rotary3pin,
-                        int rotary4pin)
+                        std::vector<int> pins)
                         :
                         mSwitch1(switchpin),
-                        mSwitch4(rotary1pin,rotary2pin,rotary3pin,rotary4pin),
-                        mDisplayTime(0)
+                        mSwitch4(pins)
             {
                 
             }
@@ -42,28 +48,28 @@ class overrideswitch
                     return autover ? "Auto: Jack Bed"  : "Manual: Jack Bed";
                 case kState_TomInBed:                      
                     return autover ? "Auto: Tom Bed"   : "Manual: Tom Bed";
-                case kState_TomAsleep:                     
+                case kState_AllOff:                     
                     return autover ? "Auto: All Off"   : "Manual: All Off";
                 case kState_AllOn:
-                    return autover ? "Auto: Daytime"   : "Manual: Daytime";
+                    return autover ? "Auto: All On"    : "Manual: All On";
                 default:                                  
                     return autover ? "Auto: Error"     : "Manual: Error"; 
             }    
         }
 
         // returns true if message has changed.
-        bool getMessage(std::string &s1, std::string &s2, const DateTime & now)
+        bool getMessage(displaystrings &s, const DateTime & now)
         {
             tSwitch4State state = getState(now);
-            s1 = statename(state,!mSwitch1.ison());
-            s2 = "    " + tostr(now.hour()) + ":" + tostr(now.minute()) + ":" + tostr(now.second());
+            s.set(statename(state,!mSwitch1.ison()),
+                    "    " + tostr(now.hour()) + ":" + tostr(now.minute()) + ":" + tostr(now.second()));
             return true;
         }
 
         tSwitch4State getState(const DateTime & now)
         {
             if (mSwitch1.ison()) 
-                return mSwitch4.getState();
+                return static_cast<tSwitch4State>(mSwitch4.getState());
 
             // determine based on time.
             return kState_JackInBed;
@@ -79,9 +85,7 @@ class overrideswitch
 
     private:
         jswitch mSwitch1;
-        switch4 mSwitch4;
-        unsigned long mDisplayTime;
-
+        jrotaryswitch mSwitch4;
 };
 
 #endif
