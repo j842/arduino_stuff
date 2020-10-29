@@ -31,8 +31,11 @@ http:10.10.10.200/update to update firmware.
 
 */
 
+const IPAddress kControllerIP(10,10,10,200);
+const IPAddress kClockMasterIP(10,10,10,220);
+
 udpbro udp;
-jwifiota wifiota("ESP32 Controller, Version 0.25");
+jwifiota wifiota("ESP32 Controller, Version 0.26");
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
 bossmain gBossMain(27,16,21,jbuz);
@@ -65,10 +68,10 @@ void setup()
 void applybossmain()
 {
   for (int i=0;i<gSwitches.size();++i)
-    if (gOverride[i]==false && gBossMain.ison())
-      gSwitches[i].Enable();
-    else
-      gSwitches[i].ShutDown();
+  {
+    gSwitches[i].Override(gOverride[i]);
+    gSwitches[i].ShutDown(!gBossMain.ison());
+  }
 }
 
 void loop()
@@ -82,7 +85,7 @@ void loop()
     { // request the clockmaster gives us our mode :-)
       jbuf b;
       b.setIDOnly(kReq_ClockMaster);
-      udp.send(b,IPAddress(10,10,10,220));
+      udp.send(b,kClockMasterIP);
     }
 
   bool prevBossMain = gBossMain.ison();

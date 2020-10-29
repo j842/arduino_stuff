@@ -5,40 +5,44 @@ class bossmain : protected lightyswitch
 {
     public:
     bossmain(int switchpin, int onlightpin, int offlightpin, jbuzzer & buz) :
-        lightyswitch(switchpin,onlightpin,offlightpin,buz),
-        mPrevState(false),
+        lightyswitch(switchpin,onlightpin,offlightpin),
         mIsFading(false),
-        mNextTime(0)
+        mNextTime(0),
+        mBuz(buz)
         {
         }
 
     void setup()
     {
         lightyswitch::setup();
-        mPrevState = ison();
     }
 
     void loop()
     {
+        bool prev = lightyswitch::ison();
+
         lightyswitch::loop();
 
-        if (mPrevState != ison())
+        if (prev != ison())
         {
-            mPrevState = ison();
             if (ison())
-                lightyswitch::TurnLightsOn();
+                lightyswitch::enable();
             else
             {
                 mIsFading = true;
                 mNextTime = millis() + kNextTime;
-                lightyswitch::mBuz.playsong(4);
+                mBuz.playsong(4);
             }
         }
 
-        if (mIsFading && millis()>=mNextTime)
+        if (!mIsFading)
+            return;
+        
+        if (millis()>=mNextTime)
         {
             mIsFading=false;
-            TurnLightsOff();
+            mNextTime=0;
+            lightyswitch::shutdown();
         }
     }
 
@@ -48,10 +52,10 @@ class bossmain : protected lightyswitch
     }
 
     private:
-        bool mPrevState;
         bool mIsFading;
         unsigned long mNextTime;
         static const int kNextTime=3000; // 3 secs
+        jbuzzer & mBuz;
 };
 
 

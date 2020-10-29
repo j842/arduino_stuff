@@ -18,12 +18,20 @@ typedef enum
 {
     kNone = 0,
     kMessage,
-    kCmd_Power, // server sets client's power state. bool for on/off.
+
+    // comms between Controller and clients.
+    kCmd_Power, // Controller sets client's power state. Cancels shutdown. bool for on/off. 
     kStat_Power, // client reports current power state. bool for on/off.
-    kReq_Power, // client requests power state from server. No payload.
-    kCmd_Shutdown, // server requests client shuts down. No payload.
-    kReq_ClockMaster, // server requests state from ClockMaster. No payload.
-    kCmd_ClockMaster, // ClockMaster sends state to server. Int as payload (tSwitch4State).
+    kReq_Power, // client requests power state from Controller. No payload.
+    kCmd_Shutdown, // Controller requests client shuts down. No payload.
+
+    // comms betwen ClockMaster and clients
+    kReq_OverridePower, // client requests power state from ClockMaster. No Payload.
+    kCmd_OverridePower, // ClockMaster sends power state to client. bool for on=overrideShutdown, off=noOverride
+
+    // comms between ClockMaster and Controller
+    kReq_ClockMaster, // Controller requests state from ClockMaster. No payload.
+    kCmd_ClockMaster, // ClockMaster sends state to Controller. Int as payload (tSwitch4State).
 } tID;
 
 typedef enum 

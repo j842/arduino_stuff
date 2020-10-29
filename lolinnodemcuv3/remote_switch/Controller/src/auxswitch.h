@@ -16,13 +16,14 @@ class auxswitch : protected lightyswitch
 {
     public:
     auxswitch(int switchpin, int onlightpin, int offlightpin, jbuzzer & buz, udpbro * udp, IPAddress ip) :
-        lightyswitch(switchpin,onlightpin,offlightpin,buz),
+        lightyswitch(switchpin,onlightpin,offlightpin),
         mUDP(udp),
         mIP(ip),
         mState(kls_undefined),
-        mPower(false),
         mShutdown(true),
-        mConfirmationTimeout(0)
+        mOverride(false),
+        mConfirmationTimeout(0),
+        mBuz(buz)
         {
         }
 
@@ -36,17 +37,17 @@ class auxswitch : protected lightyswitch
         if (mState==kls_fault)
         {
             int x = ((millis()/111)%2);
-            (x==0) ? TurnLightsOff() : TurnLightsOn();
+            (x==0) ? setlights(false,false) : setlights(true,true);
         }
         if (mState==kls_waiting)
             {
                 int x = (((mConfirmationTimeout - millis())/333)%2);
-                (x==0) ? TurnLightsOff() : TurnLightsOn();
+                (x==0) ? setlights(false,false) : setlights(true,true);
 
                 if (millis()<mConfirmationTimeout)
                     return; // nothing else to do.
 
-                TurnLightsOff();
+                shutdown();
                 mBuz.playsong(7);
                 mState = kls_timeout;
             }
@@ -55,20 +56,20 @@ class auxswitch : protected lightyswitch
             return;
 
         bool wason = ison();
+
         lightyswitch::loop();
 
-        if (ison()!=wason || ison()!=mPower) // state changed.
+        if (ison()!=wason) // state changed.
         {
-            mPower = ison();
-            sendcmd_and_indicate();
+            indicate();
+            sendcmd();
         }
     }
 
-    void sendcmd_and_indicate()
+    void indicate()
     {
         mConfirmationTimeout = millis() + 3000; // 3 sec confirmation.
         mState = kls_waiting;
-        sendcmd();
     }
 
     void sendcmd()
@@ -77,7 +78,7 @@ class auxswitch : protected lightyswitch
         if (mShutdown)
             buf.setIDOnly(kCmd_Shutdown);
         else
-            buf.setBool(kCmd_Power,mPower);
+            buf.setBool(kCmd_Power,ison());
         mUDP->send(buf,mIP);
     }
 
@@ -86,18 +87,18 @@ class auxswitch : protected lightyswitch
         return lightyswitch::ison();
     }
 
-    void Enable() 
+    void Override(bool override)
     {
-        mShutdown = false;
-        mPower = ison();
-        sendcmd_and_indicate();
+        mOverride = override;
+        indicate();
+        sendcmd(); // temp until ClockMaster sends this itself.
     }
 
-    void ShutDown()
+    void ShutDown(bool shutdown)
     {
-      mShutdown = true;
-      mPower = false;
-      sendcmd_and_indicate();
+        mShutdown = shutdown;
+        indicate();
+        sendcmd();
     }
 
     const IPAddress getIP() const {return mIP;}
@@ -111,14 +112,12 @@ class auxswitch : protected lightyswitch
 
         if (buf.getID()==kStat_Power)
         {
-            if (buf.getBool()==mPower)
-            {
-                mState=kls_confirmed;
-                mShutdown ? TurnLightsOff() : TurnLightsOn();
-                mBuz.playsong( mPower ? 6 : 7);
-            }
+            mState=kls_confirmed;
+            if (mShutdown) 
+                shutdown();
             else
-                mState=kls_fault;
+                setlights(buf.getBool(), !buf.getBool());
+            mBuz.playsong( buf.getBool() ? 6 : 7);
         }
     }
 
@@ -127,10 +126,13 @@ class auxswitch : protected lightyswitch
         IPAddress mIP;
         tstate mState;
 
-        bool mPower;
+        //bool mPower;
         bool mShutdown;
+        bool mOverride;
 
         unsigned long mConfirmationTimeout;
+
+        jbuzzer & mBuz;
 };
 
 

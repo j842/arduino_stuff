@@ -5,22 +5,17 @@
 typedef enum
 { // on,off
   kls_switch_enabled,
-  kls_switch_disabled_00, 
-  kls_switch_disabled_10,
-  kls_switch_disabled_01,
-  kls_switch_disabled_11
+  kls_shutdown
 } tlightymode;
 
 class lightyswitch 
 {
   public:
-    lightyswitch(int switchpin, int onlightpin, int offlightpin, jbuzzer & buz) :
-      mBuz(buz),
+    lightyswitch(int switchpin, int onlightpin, int offlightpin) :
       mSwitch(switchpin),
       mOnLight(onlightpin),
       mOffLight(offlightpin),
-      mMode(kls_switch_enabled),
-      mPrevOn(false)
+      mMode(kls_switch_enabled)
       {
       }
 
@@ -30,85 +25,50 @@ class lightyswitch
       mOnLight.setup();
       mOffLight.setup();
 
-      changelightymode(kls_switch_enabled);
-      updatelightsauto();
+      enable();
     }
 
     void loop()
     {
+      bool prevon = mSwitch.ison();
+
       mSwitch.loop();
       mOnLight.loop();
       mOffLight.loop();
 
-      if (mMode==kls_switch_enabled && changed())
-        {
-          updatelightsauto();
-        }
+      if (mMode==kls_switch_enabled && mSwitch.ison()!=prevon)
+          setlights(mSwitch.ison(), !mSwitch.ison());
     }
-
 
     bool ison() const
     {
         return mSwitch.ison();
     }
 
-    void TurnLightsOff()
+    void shutdown()
     {
-      changelightymode(kls_switch_disabled_00);
+      mMode = kls_shutdown;
+      setlights(false,false);
     }
 
-    void TurnLightsOn()
+    void enable()
     {
-      changelightymode(kls_switch_enabled);
-    }
-
-  protected:
-      jbuzzer & mBuz;
-
-  private:
-    bool changed()
-    {
-      return (mPrevOn!=mSwitch.ison());
-    }
-    void updatelightsauto()
-    {
-      mPrevOn=mSwitch.ison();
+      mMode = kls_switch_enabled;
       setlights(mSwitch.ison(), !mSwitch.ison());
     }
 
+  protected:
     void setlights(bool onl, bool offl)
     {
       mOnLight.seton(onl);
       mOffLight.seton(offl);
     }
 
-    
-    // override light behaviour.
-    void changelightymode(tlightymode newmode)
-    {
-      mMode = newmode;
-      switch (newmode)
-      {
-        case kls_switch_disabled_00:
-          setlights(false,false); break;
-        case kls_switch_disabled_01:
-          setlights(false,true); break;
-        case kls_switch_disabled_10:
-          setlights(true,false); break;
-        case kls_switch_disabled_11:
-          setlights(true,true); break;
-
-        default:
-          updatelightsauto(); break;
-      };
-    }
-
+  private:
     jswitch mSwitch;
     jled mOnLight;
     jled mOffLight;
     tlightymode mMode;
-
-    bool mPrevOn;
 };
 
 

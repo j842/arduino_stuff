@@ -20,7 +20,11 @@
 #include <overrideswitch.h>
 
 
-jwifiota wifiota("ESP32 Clock Master, Version 0.05");
+const IPAddress kControllerIP(10,10,10,200);
+const IPAddress kClockMasterIP(10,10,10,220);
+
+
+jwifiota wifiota("ESP32 Clock Master, Version 0.06");
 udpbro gUDP;
 
 const bool kScanI2C = false;
@@ -85,7 +89,7 @@ void setup()
 // states to send to master:
 // 7am  - On (all auxiliaries available)
 // 8pm  - Jack in bed (Jack's forced off)
-// 10pm - Tom in bed (Tom's bedroom available, everything else forced off)
+// 9pm  - Tom in bed (Tom's bedroom available, everything else forced off)
 // 11pm - Tom asleep (Everything forced off)
 
 
@@ -125,7 +129,7 @@ void loop()
   { // send the state to the client!
     jbuf b;
     b.setInt(kCmd_ClockMaster,static_cast<int>(newstate));
-    gUDP.send(b,IPAddress(10,10,10,200));
+    gUDP.send(b,kControllerIP);
 
     prevstate = newstate;
   }
