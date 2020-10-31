@@ -37,7 +37,7 @@ class auxswitch : protected lightyswitch
             if (millis()<mConfirmationTimeout)
                 return; // nothing else to do.
 
-            lightyswitch::shutdown_fade(); // fade lights - aux is unreachable.
+            lightyswitch::setlights(false,false); // turn off lights - aux is unreachable.
             mBuz.playsong(7);
             mState = kls_timeout;
         }

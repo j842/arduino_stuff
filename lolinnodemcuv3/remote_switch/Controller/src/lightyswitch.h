@@ -12,11 +12,12 @@ typedef enum
 class lightyswitch 
 {
   public:
-    lightyswitch(int switchpin, int onlightpin, int offlightpin) :
+    lightyswitch(int switchpin, int onlightpin, int offlightpin, bool fadeOff=false) :
       mSwitch(switchpin),
       mOnLight(onlightpin),
       mOffLight(offlightpin),
-      mMode(kls_switch_enabled)
+      mMode(kls_switch_enabled),
+      mFadeOff(fadeOff)
       {
       }
 
@@ -56,17 +57,29 @@ class lightyswitch
     void shutdown_fade()
     {
       mMode = kls_shutdown;
-      // if (mOnLight.getstate()==kled_on)
-        mOnLight.fade();
-      // if (mOffLight.getstate()==kled_on)
-        mOffLight.fade();
+      _fadelight(mOnLight);
+      _fadelight(mOffLight);
+    }
+
+    void _fadelight(jled & light)
+    {
+      if (light.getstate()==kled_on)
+        light.fade();
+      else
+        light.seton(false); // not flashing
     }
 
     void enable()
     {
       mMode = kls_switch_enabled;
-      mOnLight.seton(mSwitch.ison());
-      mOffLight.seton(!mSwitch.ison());
+
+      bool ison = mSwitch.ison();
+
+      mOnLight.seton(ison);
+      if (mFadeOff && !ison)
+        mOffLight.fade();
+      else
+        mOffLight.seton(!ison);
     }
 
     void flash()
@@ -92,6 +105,7 @@ class lightyswitch
     jled mOnLight;
     jled mOffLight;
     tlightymode mMode;
+    bool mFadeOff;
 };
 
 

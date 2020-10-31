@@ -23,13 +23,14 @@ class jled {
     void loop_flashing();
     void loop_fading();
     void _lightUp(bool turnon);
-    int mPin;
+    const int mPin;
     bool mIsOn;
     tled_state mState;
 
     int mFlashInterval;
-    bool mFlashPhase;
 
+    unsigned long mFlashFinish;
+    bool mFlashLastPhase;
     unsigned long mFadeFinish;
     static const int kFadeTime = 3000; // 3 secs.
 };
@@ -63,7 +64,6 @@ jled::jled(int pin) :
   mIsOn(false),
   mState(kled_off),
   mFlashInterval(255),
-  mFlashPhase(false),
   mFadeFinish(0)
   {
   }
@@ -97,15 +97,12 @@ void jled::loop()
 
 void jled::loop_flashing()
 {
-  static unsigned long sLastSwitch = 0;
-  static bool sLastOn = mFlashPhase;
-
   unsigned long now = millis();
-  if (now>(sLastSwitch+mFlashInterval))
+  if (now>(mFlashFinish+mFlashInterval))
   {
-    sLastSwitch = now;
-    sLastOn = !sLastOn;
-    _lightUp(sLastOn);
+    mFlashFinish = now;
+    mFlashLastPhase = !mFlashLastPhase;
+    _lightUp(mFlashLastPhase);
   }
 }
 
@@ -150,7 +147,9 @@ tled_state jled::getstate() const
 void jled::flash(int interval, bool phase)
 {
   mFlashInterval=interval;
-  mFlashPhase=phase;
+  mFlashFinish=0;
+  mFlashLastPhase=phase;
+
   mState=kled_flashing;
 }
 

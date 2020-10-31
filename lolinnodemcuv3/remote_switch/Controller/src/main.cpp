@@ -37,7 +37,7 @@ udpbro udp;
 jwifiota wifiota("ESP32 Controller, Version 0.27");
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
-lightyswitch gBossMain(27,16,21);
+lightyswitch gBossMain(27,16,21,true);
 std::vector<auxswitch> gSwitches;
 std::vector<bool> gOverride = {false,false,false,false};
 
@@ -66,17 +66,14 @@ void setup()
 
 void applybossmain()
 {
-  // for (int i=0;i<gSwitches.size();++i)
-  // {
-  //   gSwitches[i].Override(gOverride[i]);
-  //   gSwitches[i].ShutDown(!gBossMain.ison());
-  // }
+  for (int i=0;i<gSwitches.size();++i)
+  {
+    gSwitches[i].Override(gOverride[i]);
+    gSwitches[i].ShutDown(!gBossMain.ison());
+  }
 
   if (!gBossMain.ison())
-  {
-    gBossMain.shutdown_fade();
     jbuz.playsong(4);
-  }
 }
 
 void loop()
@@ -111,22 +108,22 @@ void loop()
 
     if (b.getID()==kCmd_ClockMaster)
     { // clockmaster override!
-      // tSwitch4State state = static_cast<tSwitch4State>(b.getInt());
+      tSwitch4State state = static_cast<tSwitch4State>(b.getInt());
 
-      // switch(state)
-      // {
-      //   case kState_AllOn:
-      //     gOverride = {false,false,false,false}; break;
-      //   case kState_AllOff:
-      //     gOverride = {true,true,true,true}; break;
-      //   case kState_JackInBed:
-      //     gOverride = {false,false,true,false}; break;
-      //   case kState_TomInBed:
-      //     gOverride = {true,false,true,true}; break;
+      switch(state)
+      {
+        case kState_AllOn:
+          gOverride = {false,false,false,false}; break;
+        case kState_AllOff:
+          gOverride = {true,true,true,true}; break;
+        case kState_JackInBed:
+          gOverride = {false,false,true,false}; break;
+        case kState_TomInBed:
+          gOverride = {true,false,true,true}; break;
 
-      //   default:
-      //     gOverride = {false,false,false,false}; break;
-      // }
+        default:
+          gOverride = {false,false,false,false}; break;
+      }
 
       jbuz.playsong(8);
       applybossmain();
