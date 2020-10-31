@@ -39,7 +39,10 @@ class lightyswitch
       mOffLight.loop();
 
       if (mMode!=kls_shutdown && mSwitch.ison()!=prevon)
+      { // if switch changed while we're flashing and not shutdown, turn flashing off and respect change.
+        mFlashing=false;
         updatelights();
+      }
     }
 
     bool ison() const
@@ -51,8 +54,7 @@ class lightyswitch
     {
       mMode = kls_shutdown;
       mFlashing = false;
-      mOnLight.seton(false);
-      mOffLight.seton(false);
+      updatelights();
     }
 
     void shutdown_fade()
@@ -106,7 +108,14 @@ class lightyswitch
     }
 
     void updatelights()
-    {
+    {      
+      if (mMode==kls_shutdown)
+      {
+        mOnLight.seton(false);
+        mOffLight.seton(false);
+        return; // shutdown lights handled by shutdown routine.
+      }
+
       bool ison = mSwitch.ison();
 
       mOnLight.seton(ison);

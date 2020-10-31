@@ -34,7 +34,7 @@ const IPAddress kControllerIP(10,10,10,200);
 const IPAddress kClockMasterIP(10,10,10,220);
 
 udpbro udp;
-jwifiota wifiota("ESP32 Controller, Version 0.27");
+jwifiota wifiota("ESP32 Controller, Version 0.28");
 jbuzzer jbuz(12); // buzzer + on pin 12.
 
 lightyswitch gBossMain(27,16,21,true);
