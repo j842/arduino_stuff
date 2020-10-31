@@ -54,7 +54,7 @@ class jbuzzer
       melody = s-1;   
     }
 
-    #ifdef __USETONE
+#if defined ARDUINO_ARCH_ESP8266
       void starttone(unsigned int frequency, unsigned long duration)
       {
         tone(mBuzzerPin,frequency,duration);
@@ -65,24 +65,24 @@ class jbuzzer
       void customsetup()
       {
       }
-    #else
-      #define ledChannel 0
+#elif defined ARDUINO_ARCH_ESP32
+      static const int PWM_CHANNEL=15;
       void customsetup()
       {
         int freq = 2000;
         int resolution = 8;
-        ledcSetup(ledChannel, freq, resolution);
-        ledcAttachPin(mBuzzerPin, ledChannel);
+        ledcSetup(PWM_CHANNEL, freq, resolution);
+        ledcAttachPin(mBuzzerPin, PWM_CHANNEL);
       }
       void starttone(unsigned int frequency, unsigned long duration)
       {  // https://community.platformio.org/t/tone-not-working-on-espressif32-platform/7587/2
-          ledcWriteTone(ledChannel, frequency);
+          ledcWriteTone(PWM_CHANNEL, frequency);
       }
       void stoptone()
       {
-          ledcWriteTone(ledChannel, 0);
+          ledcWriteTone(PWM_CHANNEL, 0);
       }
-    #endif
+#endif
 
     void setup() 
     {

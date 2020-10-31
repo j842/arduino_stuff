@@ -5,7 +5,8 @@
 typedef enum
 { // on,off
   kls_switch_enabled,
-  kls_shutdown
+  kls_shutdown,
+  kls_flashing
 } tlightymode;
 
 class lightyswitch 
@@ -37,7 +38,7 @@ class lightyswitch
       mOffLight.loop();
 
       if (mMode==kls_switch_enabled && mSwitch.ison()!=prevon)
-          setlights(mSwitch.ison(), !mSwitch.ison());
+        enable(); // updates lights.
     }
 
     bool ison() const
@@ -45,26 +46,48 @@ class lightyswitch
         return mSwitch.ison();
     }
 
-    void shutdown()
+    void shutdown_instant()
     {
       mMode = kls_shutdown;
-      setlights(false,false);
+      mOnLight.seton(false);
+      mOffLight.seton(false);
+    }
+
+    void shutdown_fade()
+    {
+      mMode = kls_shutdown;
+      // if (mOnLight.getstate()==kled_on)
+        mOnLight.fade();
+      // if (mOffLight.getstate()==kled_on)
+        mOffLight.fade();
     }
 
     void enable()
     {
       mMode = kls_switch_enabled;
-      setlights(mSwitch.ison(), !mSwitch.ison());
+      mOnLight.seton(mSwitch.ison());
+      mOffLight.seton(!mSwitch.ison());
+    }
+
+    void flash()
+    {
+      mMode = kls_flashing;
+      mOnLight.flash(250,false);
+      mOffLight.flash(250,true);
     }
 
   protected:
+    // force the lights to be something other than the switch.
+    // used to display the true state of the auxiliaries.
     void setlights(bool onl, bool offl)
     {
       mOnLight.seton(onl);
       mOffLight.seton(offl);
     }
 
-  private:
+    tlightymode getMode() const {return mMode;}
+
+  protected:
     jswitch mSwitch;
     jled mOnLight;
     jled mOffLight;

@@ -9,7 +9,6 @@ typedef enum
   kls_waiting,
   kls_confirmed,
   kls_timeout,
-  kls_fault,
 } tstate;
 
 class auxswitch : protected lightyswitch
@@ -20,7 +19,6 @@ class auxswitch : protected lightyswitch
         mUDP(udp),
         mIP(ip),
         mState(kls_undefined),
-        mShutdown(true),
         mOverride(false),
         mConfirmationTimeout(0),
         mBuz(buz)
@@ -34,33 +32,21 @@ class auxswitch : protected lightyswitch
 
     void loop()
     {
-        if (mState==kls_fault)
-        {
-            int x = ((millis()/111)%2);
-            (x==0) ? setlights(false,false) : setlights(true,true);
-        }
         if (mState==kls_waiting)
-            {
-                int x = (((mConfirmationTimeout - millis())/333)%2);
-                (x==0) ? setlights(false,false) : setlights(true,true);
+        {
+            if (millis()<mConfirmationTimeout)
+                return; // nothing else to do.
 
-                if (millis()<mConfirmationTimeout)
-                    return; // nothing else to do.
-
-                shutdown();
-                mBuz.playsong(7);
-                mState = kls_timeout;
-            }
-
-        if (mShutdown)
-            return;
+            lightyswitch::shutdown_fade(); // fade lights - aux is unreachable.
+            mBuz.playsong(7);
+            mState = kls_timeout;
+        }
 
         bool wason = ison();
-
         lightyswitch::loop();
-
-        if (ison()!=wason) // state changed.
+        if (ison()!=wason && getMode()==kls_switch_enabled) // state changed.
         {
+            mBuz.playsong( ison() ? 6 : 7);
             indicate();
             sendcmd();
         }
@@ -70,15 +56,17 @@ class auxswitch : protected lightyswitch
     {
         mConfirmationTimeout = millis() + 3000; // 3 sec confirmation.
         mState = kls_waiting;
+        lightyswitch::flash();
     }
 
     void sendcmd()
     {
         jbuf buf;
-        if (mShutdown)
+        if (mOverride || getMode()==kls_shutdown)
             buf.setIDOnly(kCmd_Shutdown);
         else
             buf.setBool(kCmd_Power,ison());
+
         mUDP->send(buf,mIP);
     }
 
@@ -94,9 +82,14 @@ class auxswitch : protected lightyswitch
         sendcmd(); // temp until ClockMaster sends this itself.
     }
 
+    // shutdown the auxswitch.
     void ShutDown(bool shutdown)
     {
-        mShutdown = shutdown;
+        if (shutdown)
+            lightyswitch::shutdown_instant();
+        else
+            lightyswitch::enable();
+
         indicate();
         sendcmd();
     }
@@ -113,11 +106,11 @@ class auxswitch : protected lightyswitch
         if (buf.getID()==kStat_Power)
         {
             mState=kls_confirmed;
-            if (mShutdown) 
-                shutdown();
+
+            if (lightyswitch::getMode()  == kls_switch_enabled || buf.getBool())
+                setlights(buf.getBool(), !buf.getBool()); // override the lights shown by the switch!
             else
-                setlights(buf.getBool(), !buf.getBool());
-            mBuz.playsong( buf.getBool() ? 6 : 7);
+                setlights(false,false);
         }
     }
 
@@ -126,8 +119,6 @@ class auxswitch : protected lightyswitch
         IPAddress mIP;
         tstate mState;
 
-        //bool mPower;
-        bool mShutdown;
         bool mOverride;
 
         unsigned long mConfirmationTimeout;
