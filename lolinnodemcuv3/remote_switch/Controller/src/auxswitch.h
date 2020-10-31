@@ -98,19 +98,23 @@ class auxswitch : protected lightyswitch
 
     void handleUDP(const jbuf & buf)
     {
-        if (buf.getID()==kReq_Power)
+        switch (buf.getID())
         {
-            sendcmd();
-        }
+            case kReq_Power:
+                sendcmd();
+                break;
 
-        if (buf.getID()==kStat_Power)
-        {
-            mState=kls_confirmed;
+            case kStat_Power: // client sending us their status. Display on LEDs.
+                {
+                mState=kls_confirmed;
+                if (lightyswitch::getMode()==kls_flashing)
+                    lightyswitch::enable(); // stop flashing.
+                lightyswitch::setlights(buf.getBool(), !buf.getBool()); // override the lights shown by the switch!
+                break;
+                }
 
-            if (lightyswitch::getMode()  == kls_switch_enabled || buf.getBool())
-                setlights(buf.getBool(), !buf.getBool()); // override the lights shown by the switch!
-            else
-                setlights(false,false);
+            default:
+                break;
         }
     }
 
