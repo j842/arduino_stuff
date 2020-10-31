@@ -6,7 +6,6 @@ typedef enum
 { // on,off
   kls_normal,
   kls_shutdown,
-  kls_flashing    // interruptable
 } tlightymode;
 
 class lightyswitch 
@@ -17,7 +16,8 @@ class lightyswitch
       mOnLight(onlightpin),
       mOffLight(offlightpin),
       mMode(kls_normal),
-      mFadeOff(fadeOff)
+      mFadeOff(fadeOff),
+      mFlashing(false)
       {
       }
 
@@ -50,6 +50,7 @@ class lightyswitch
     void shutdown_instant()
     {
       mMode = kls_shutdown;
+      mFlashing = false;
       mOnLight.seton(false);
       mOffLight.seton(false);
     }
@@ -57,6 +58,7 @@ class lightyswitch
     void shutdown_fade()
     {
       mMode = kls_shutdown;
+      mFlashing = false;
       _fadelight(mOnLight);
       _fadelight(mOffLight);
     }
@@ -72,14 +74,26 @@ class lightyswitch
     void enable()
     {
       mMode = kls_normal;
+      mFlashing = false;
       updatelights();
     }
 
     void flash()
     {
-      mMode = kls_flashing;
+      mFlashing = true;
       mOnLight.flash(250,false);
       mOffLight.flash(250,true);
+    }
+
+    bool isFlashing()
+    {
+      return mFlashing;
+    }
+
+    void stopFlashing()
+    {
+      mFlashing=false;
+      updatelights();
     }
 
   protected:
@@ -110,6 +124,7 @@ class lightyswitch
     jled mOffLight;
     tlightymode mMode;
     bool mFadeOff;
+    bool mFlashing;
 };
 
 

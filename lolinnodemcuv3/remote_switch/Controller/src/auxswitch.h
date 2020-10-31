@@ -23,19 +23,21 @@ class auxswitch : protected lightyswitch
 
     void loop()
     {
-        bool wason = ison();
+        bool wason = lightyswitch::ison();
         lightyswitch::loop();
-        if (ison()!=wason && lightyswitch::getMode()!=kls_shutdown) // state changed.
+        if (lightyswitch::ison()!=wason && lightyswitch::getMode()!=kls_shutdown) // state changed.
         {
+            Serial.printf("Physical switch changed to: %s\n",lightyswitch::ison() ? "on" : "off");
+
             mBuz.playsong( ison() ? 6 : 7);
             indicate();
-            sendcmd();
+            _sendcmd();
         }
 
-        if (lightyswitch::getMode()==kls_flashing)
+        if (lightyswitch::isFlashing())
             if (millis()>mConfirmationTimeout)
             {
-                lightyswitch::enable();
+                lightyswitch::stopFlashing();
                 lightyswitch::setlights(false,false); // turn off lights - aux is unreachable.
                 mBuz.playsong(7);
             }
@@ -47,38 +49,34 @@ class auxswitch : protected lightyswitch
         lightyswitch::flash();
     }
 
-    void sendcmd()
-    {
-        jbuf buf;
-        if (mOverride || getMode()==kls_shutdown)
-            buf.setIDOnly(kCmd_Shutdown);
-        else
-            buf.setBool(kCmd_Power,ison());
 
-        mUDP->send(buf,mIP);
-    }
-
-    bool ison() const
-    {
-        return lightyswitch::ison();
-    }
 
     void Override(bool override)
     {
+        if (mOverride==override)
+            return;
+
+        Serial.printf("Override state changed to: %s\n",override ? "OVERRIDE" : "no override");
         mOverride = override;
-        sendcmd(); // temp until ClockMaster sends this itself.
+        _sendcmd(); // temp until ClockMaster sends this itself.
     }
 
     // shutdown the auxswitch.
     void ShutDown(bool shutdown)
     {
+        bool isShutdown = (lightyswitch::getMode()==kls_shutdown);
+        if (isShutdown==shutdown)
+            return;
+
+        Serial.printf("Shutdown state changed to: %s\n",shutdown ? "SHUTDOWN" : "Enable");
+
         if (shutdown)
             lightyswitch::shutdown_instant();
         else
             lightyswitch::enable();
 
         indicate();
-        sendcmd();
+        _sendcmd();
     }
 
     const IPAddress getIP() const {return mIP;}
@@ -88,24 +86,45 @@ class auxswitch : protected lightyswitch
         switch (buf.getID())
         {
             case kReq_Power:
-                sendcmd();
+            {
+                Serial.printf("Got kReq_Power from %s\n",mIP.toString().c_str());
+                _sendcmd();
                 break;
+            }
 
             case kStat_Power: // client sending us their status. Display on LEDs.
                 {
-                if (lightyswitch::getMode()==kls_shutdown)
-                    break; // stay shut down.
+                Serial.printf("Got kState_Power from %s - power %s\n",mIP.toString().c_str(), buf.getBool() ? "ON" : "OFF");
 
-                if (lightyswitch::getMode()==kls_flashing)
-                    lightyswitch::enable(); // stop flashing before continuing.
+                if (lightyswitch::isFlashing())
+                    lightyswitch::stopFlashing();
 
-                lightyswitch::setlights(buf.getBool(), !buf.getBool()); // override the lights shown by the switch!
+                if (lightyswitch::getMode()==kls_normal)
+                    lightyswitch::setlights(buf.getBool(), !buf.getBool()); // override the lights shown by the switch!
                 }
 
             default:
                 break;
         }
     }
+
+    private:
+        void _sendcmd()
+        {
+            jbuf buf;
+            if (mOverride || getMode()==kls_shutdown)
+            {
+                Serial.printf("Telling %s to shutdown.\n",mIP.toString().c_str());
+                buf.setIDOnly(kCmd_Shutdown);
+            }
+            else 
+            {
+                Serial.printf("Telling %s to turn %s\n",mIP.toString().c_str(), ison() ? "ON" : "OFF");
+                buf.setBool(kCmd_Power,ison());
+            }
+
+            mUDP->send(buf,mIP);
+        }
 
     private:
         udpbro * mUDP;
