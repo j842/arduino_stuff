@@ -4,9 +4,9 @@
 
 typedef enum
 { // on,off
-  kls_switch_enabled,
+  kls_normal,
   kls_shutdown,
-  kls_flashing
+  kls_flashing    // interruptable
 } tlightymode;
 
 class lightyswitch 
@@ -16,7 +16,7 @@ class lightyswitch
       mSwitch(switchpin),
       mOnLight(onlightpin),
       mOffLight(offlightpin),
-      mMode(kls_switch_enabled),
+      mMode(kls_normal),
       mFadeOff(fadeOff)
       {
       }
@@ -38,8 +38,8 @@ class lightyswitch
       mOnLight.loop();
       mOffLight.loop();
 
-      if (mMode==kls_switch_enabled && mSwitch.ison()!=prevon)
-        enable(); // updates lights.
+      if (mMode!=kls_shutdown && mSwitch.ison()!=prevon)
+        updatelights();
     }
 
     bool ison() const
@@ -71,15 +71,8 @@ class lightyswitch
 
     void enable()
     {
-      mMode = kls_switch_enabled;
-
-      bool ison = mSwitch.ison();
-
-      mOnLight.seton(ison);
-      if (mFadeOff && !ison)
-        mOffLight.fade();
-      else
-        mOffLight.seton(!ison);
+      mMode = kls_normal;
+      updatelights();
     }
 
     void flash()
@@ -96,6 +89,17 @@ class lightyswitch
     {
       mOnLight.seton(onl);
       mOffLight.seton(offl);
+    }
+
+    void updatelights()
+    {
+      bool ison = mSwitch.ison();
+
+      mOnLight.seton(ison);
+      if (mFadeOff && !ison)
+        mOffLight.fade();
+      else
+        mOffLight.seton(!ison);
     }
 
     tlightymode getMode() const {return mMode;}

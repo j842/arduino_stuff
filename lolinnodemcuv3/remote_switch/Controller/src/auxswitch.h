@@ -3,14 +3,6 @@
 
 #include <jbuf.h>
 
-typedef enum
-{
-  kls_undefined,
-  kls_waiting,
-  kls_confirmed,
-  kls_timeout,
-} tstate;
-
 class auxswitch : protected lightyswitch
 {
     public:
@@ -18,10 +10,9 @@ class auxswitch : protected lightyswitch
         lightyswitch(switchpin,onlightpin,offlightpin),
         mUDP(udp),
         mIP(ip),
-        mState(kls_undefined),
+        mBuz(buz),
         mOverride(false),
-        mConfirmationTimeout(0),
-        mBuz(buz)
+        mConfirmationTimeout(0)
         {
         }
 
@@ -32,30 +23,27 @@ class auxswitch : protected lightyswitch
 
     void loop()
     {
-        if (mState==kls_waiting)
-        {
-            if (millis()<mConfirmationTimeout)
-                return; // nothing else to do.
-
-            lightyswitch::setlights(false,false); // turn off lights - aux is unreachable.
-            mBuz.playsong(7);
-            mState = kls_timeout;
-        }
-
         bool wason = ison();
         lightyswitch::loop();
-        if (ison()!=wason && getMode()==kls_switch_enabled) // state changed.
+        if (ison()!=wason && lightyswitch::getMode()!=kls_shutdown) // state changed.
         {
             mBuz.playsong( ison() ? 6 : 7);
             indicate();
             sendcmd();
         }
+
+        if (lightyswitch::getMode()==kls_flashing)
+            if (millis()>mConfirmationTimeout)
+            {
+                lightyswitch::enable();
+                lightyswitch::setlights(false,false); // turn off lights - aux is unreachable.
+                mBuz.playsong(7);
+            }
     }
 
     void indicate()
     {
         mConfirmationTimeout = millis() + 3000; // 3 sec confirmation.
-        mState = kls_waiting;
         lightyswitch::flash();
     }
 
@@ -78,7 +66,6 @@ class auxswitch : protected lightyswitch
     void Override(bool override)
     {
         mOverride = override;
-        indicate();
         sendcmd(); // temp until ClockMaster sends this itself.
     }
 
@@ -106,11 +93,13 @@ class auxswitch : protected lightyswitch
 
             case kStat_Power: // client sending us their status. Display on LEDs.
                 {
-                mState=kls_confirmed;
+                if (lightyswitch::getMode()==kls_shutdown)
+                    break; // stay shut down.
+
                 if (lightyswitch::getMode()==kls_flashing)
-                    lightyswitch::enable(); // stop flashing.
+                    lightyswitch::enable(); // stop flashing before continuing.
+
                 lightyswitch::setlights(buf.getBool(), !buf.getBool()); // override the lights shown by the switch!
-                break;
                 }
 
             default:
@@ -121,13 +110,11 @@ class auxswitch : protected lightyswitch
     private:
         udpbro * mUDP;
         IPAddress mIP;
-        tstate mState;
+        jbuzzer & mBuz;
 
         bool mOverride;
 
         unsigned long mConfirmationTimeout;
-
-        jbuzzer & mBuz;
 };
 
 

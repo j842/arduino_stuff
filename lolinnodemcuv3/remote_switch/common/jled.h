@@ -98,9 +98,10 @@ void jled::loop()
 void jled::loop_flashing()
 {
   unsigned long now = millis();
-  if (now>(mFlashFinish+mFlashInterval))
+  if (now>mFlashFinish)
+  //if (now%500>250)
   {
-    mFlashFinish = now;
+    mFlashFinish = now+mFlashInterval;
     mFlashLastPhase = !mFlashLastPhase;
     _lightUp(mFlashLastPhase);
   }
