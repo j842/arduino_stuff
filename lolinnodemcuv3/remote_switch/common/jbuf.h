@@ -4,16 +4,6 @@
 #include <string>
 #include <assert.h>
 
-typedef enum
-{
-    kState_JackInBed=0,
-    kState_TomInBed=1,
-    kState_AllOff=2,
-    kState_AllOn=3,
-    kState_Undefined=-1,
-} tSwitch4State;
-
-
 typedef enum 
 {
     kNone = 0,
@@ -28,10 +18,6 @@ typedef enum
     // comms betwen ClockMaster and clients
     kReq_OverridePower, // client requests power state from ClockMaster. No Payload.
     kCmd_OverridePower, // ClockMaster sends power state to client. bool for on=overrideShutdown, off=noOverride
-
-    // comms between ClockMaster and Controller
-    kReq_ClockMaster, // Controller requests state from ClockMaster. No payload.
-    kCmd_ClockMaster, // ClockMaster sends state to Controller. Int as payload (tSwitch4State).
 } tID;
 
 typedef enum 

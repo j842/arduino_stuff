@@ -24,7 +24,7 @@ const IPAddress kControllerIP(10,10,10,200);
 const IPAddress kClockMasterIP(10,10,10,220);
 
 
-jwifiota wifiota("ESP32 Clock Master, Version 0.06");
+jwifiota wifiota("ESP32 Clock Master, Version 0.07");
 udpbro gUDP;
 
 const bool kScanI2C = false;
@@ -93,6 +93,37 @@ void setup()
 // 11pm - Tom asleep (Everything forced off)
 
 
+
+
+
+void handleStateChange(tSwitch4State newstate)
+{
+  std::vector<bool> gOverride = {false,false,false,false};
+
+  switch(newstate)
+  {
+    case kState_AllOn:
+      gOverride = {false,false,false,false}; break;
+    case kState_AllOff:
+      gOverride = {true,true,true,true}; break;
+    case kState_JackInBed:
+      gOverride = {false,false,true,false}; break;
+    case kState_TomInBed:
+      gOverride = {true,false,true,true}; break;
+
+    default:
+      gOverride = {false,false,false,false}; break;
+  }
+
+  for (int i=0;i<gOverride.size();++i)
+    {
+      jbuf b;
+      b.setBool(kCmd_OverridePower,gOverride[i]);
+      gUDP.send(b,IPAddress(10,10,10,200+i+1)); // 10.10.10.201 to 204.
+    }
+}
+
+
 void loop() 
 {
   static bool firstrun = true;
@@ -109,10 +140,9 @@ void loop()
   if (gUDP.loop()) // has UDP received packet.
   {
     const jbuf & b( gUDP.getBuf());
-    if (b.getID()==kReq_ClockMaster)
+    if (b.getID()==kReq_OverridePower)
       gotUDPRequest = true;
   }
-
 
   static unsigned long nextcheck = 0;
   static DateTime now;
@@ -127,10 +157,7 @@ void loop()
 
   if (newstate != prevstate || gotUDPRequest)
   { // send the state to the client!
-    jbuf b;
-    b.setInt(kCmd_ClockMaster,static_cast<int>(newstate));
-    gUDP.send(b,kControllerIP);
-
+    handleStateChange(newstate);
     prevstate = newstate;
   }
 

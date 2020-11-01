@@ -8,6 +8,15 @@
 #include <j16x2lcd.h>
 #include <jbuf.h>
 
+typedef enum
+{
+    kState_JackInBed=0,
+    kState_TomInBed=1,
+    kState_AllOff=2,
+    kState_AllOn=3,
+    kState_Undefined=-1,
+} tSwitch4State;
+
 class overrideswitch
 {
     public:

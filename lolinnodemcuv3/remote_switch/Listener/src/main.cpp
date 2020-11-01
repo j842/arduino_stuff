@@ -16,7 +16,7 @@ Built with PlatformIO in Visual Studio Code.
 */
 
 udpbro gUDP;
-jwifiota wifiota("ESP8266 Aux Listener, Version 0.06");
+jwifiota wifiota("ESP8266 Aux Listener, Version 0.09");
 
 const IPAddress kControllerIP(10,10,10,200);
 const IPAddress kClockMasterIP(10,10,10,220);
@@ -31,9 +31,7 @@ class clientState
     clientState() :
       mControllerPowerOn(false),
       mControllerShutdown(false),
-      mOverrideShutdown(false),
-      mShuttingDown(false),
-      mOffTime(0)
+      mOverrideShutdown(false)
     {
     }
 
@@ -44,69 +42,30 @@ class clientState
       return false;
     }
 
-    bool override() const{
-      return mOverrideShutdown;
-    }
-
-    bool shuttingDown() 
-    {
-      if (!mShuttingDown)    
-        return false;
-
-      if (millis()>mOffTime)
-      {
-        mShuttingDown = false;
-        mOffTime = 0;
-        return false;
-      }
-
-      return true;
-    }
-
-    float percentFade()
-    {
-      if (!shuttingDown())
-        return 0.0;
-      float f = mOffTime-millis();
-      return (f/static_cast<float>(kFadems));
-    }
-
     void setControllerPowerOn(bool t) {mControllerPowerOn = t;}
-    void setControllerShutdown(bool t) {mControllerShutdown = t; handleshutdown();}
-    void setOverrideShutdown(bool t) {mOverrideShutdown = t; handleshutdown();}  
+    void setControllerShutdown(bool t) {mControllerShutdown = t;}
+    void setOverrideShutdown(bool t) {mOverrideShutdown = t;}  
 
     bool isShutDown() const {
       return (mOverrideShutdown || mControllerShutdown);
     }
-  private:
-    void handleshutdown()
-    { // figure out if we're shutting down.
-      if (isShutDown())
-      {
-        mShuttingDown = true;
-        mOffTime = millis()+kFadems;
-      } else {
-        mShuttingDown = false;
-        mOffTime = 0;
-      }
+
+    rgb1023 getColour()
+    {
+      if (mOverrideShutdown)
+        return rgb1023(20,0,0); // very dark red
+      if (mControllerShutdown)
+        return rgb1023(100,50,0); // dark orange.
+      return mControllerPowerOn ? rgb1023(0,500,0) : rgb1023(500,100,0);
     }
 
   private:
-    static const int kFadems = 4000;
-
     bool mControllerPowerOn;
     bool mControllerShutdown;
     bool mOverrideShutdown;
-
-    bool mShuttingDown;
-    unsigned long mOffTime;
 };
 
-
 static clientState sClientState;
-
-
-
 
 void setup()
 { // connect via wifi to set up credentials (temporarily creates an access point to connect to)
@@ -132,73 +91,83 @@ void confirmstatus()
 
 void trafficlights()
 {
-    gLed.setRGB255(255,0,0);
-    delay(200);
-    gLed.setRGB255(0,255,0);
-    delay(200);
-    gLed.setRGB255(0,0,255);
-    delay(200);
-    gLed.setRGB255(255,0,0);
+    gLed.setRGB(rgb1023(1023,0,0));
+    delay(300);
+    gLed.setRGB(rgb1023(0,1023,0));
+    delay(300);
+    gLed.setRGB(rgb1023(0,0,1023));
+    delay(300);
+    gLed.setRGB(rgb1023(512,0,0));
+}
+
+void firstrun()
+{
+  static bool sFirstRun=true;
+  if (!sFirstRun) return;
+  sFirstRun=false;
+
+  trafficlights();
+
+  jbuf rbuf;
+  rbuf.setIDOnly(kReq_Power);
+  gUDP.send(rbuf,kControllerIP);
+
+  rbuf.setIDOnly(kReq_ClockMaster);
+  gUDP.send(rbuf,kClockMasterIP);
+}
+
+void handleUDP()
+{
+  const jbuf & b( gUDP.getBuf());
+
+  switch (b.getID())
+  {
+    case kCmd_Power:
+    {
+      Serial.println("Controller sets power state.");
+      sClientState.setControllerPowerOn(b.getBool());
+      sClientState.setControllerShutdown(false); // power state only set when shutdown cancelled.
+      break;
+    }
+    case kCmd_Shutdown:
+    {
+      Serial.println("Controller requests we shut down!");
+      sClientState.setControllerShutdown(true);
+      break;
+    }
+    case kCmd_OverridePower:
+    {
+      Serial.println("ClockMaster overrides!");
+      sClientState.setOverrideShutdown(b.getBool());
+      break;
+    }
+
+    default:
+      Serial.println("Unknown UDP Message.");
+      return;
+  }
+
+  // update relay state.
+  gRelay.set(!sClientState.isOn()); // we're using the Normally Open connection (D5 high at boot)
+
+  // update LED state.
+  if (sClientState.isShutDown())
+    gLed.fade(sClientState.getColour());
+  else  
+    gLed.setRGB(sClientState.getColour());
+
+  // confirm our current status with the controller.
+  confirmstatus();
 }
 
 void loop()
 {
-  static bool firstrun=true;
-
-  if (firstrun)
-  {
-    firstrun = false;
-
-    trafficlights();
-
-    jbuf rbuf;
-    rbuf.setIDOnly(kReq_Power);
-    gUDP.send(rbuf,kControllerIP);
-
-    rbuf.setIDOnly(kReq_ClockMaster);
-    gUDP.send(rbuf,kClockMasterIP);
-  }
-
-  if (sClientState.shuttingDown())
-      gLed.setRGBh( (int)(400.0*sClientState.percentFade()), (int)(80.0*sClientState.percentFade()),0);
-
-  if (gUDP.loop()) // has UDP received packet.
-  {
-    const jbuf & b( gUDP.getBuf());
-
-    switch (b.getID())
-    {
-      case kCmd_Power:
-      {
-        Serial.println("Controller sets power state.");
-        sClientState.setControllerPowerOn(b.getBool());
-        sClientState.setControllerShutdown(false); // power state only set when shutdown cancelled.
-        break;
-      }
-      case kCmd_Shutdown:
-      {
-        Serial.println("Controller requests we shut down!");
-        sClientState.setControllerShutdown(true);
-        break;
-      }
-      case kCmd_OverridePower:
-      {
-        Serial.println("ClockMaster overrides!");
-        sClientState.setOverrideShutdown(b.getBool());
-        break;
-      }
-
-      default:
-        Serial.println("Unknown UDP Message.");
-    }
-
-
-    gRelay.set(!sClientState.isOn()); // we're using the Normally Open connection (D5 high at boot)
-    if (!sClientState.isShutDown())
-      sClientState.isOn() ? gLed.setRGB255(0,100,0) : gLed.setRGB255(100,20,0);
-
-    confirmstatus();
-  }
+  firstrun();
 
   wifiota.loop();
+  gLed.loop();
+
+  if (gUDP.loop()) // has UDP received packet.
+    handleUDP();
+
 }

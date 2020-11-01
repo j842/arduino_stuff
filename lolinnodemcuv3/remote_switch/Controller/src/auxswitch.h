@@ -11,7 +11,6 @@ class auxswitch : protected lightyswitch
         mUDP(udp),
         mIP(ip),
         mBuz(buz),
-        mOverride(false),
         mConfirmationTimeout(0)
         {
         }
@@ -47,18 +46,6 @@ class auxswitch : protected lightyswitch
     {
         mConfirmationTimeout = millis() + 3000; // 3 sec confirmation.
         lightyswitch::flash();
-    }
-
-
-
-    void Override(bool override)
-    {
-        if (mOverride==override)
-            return;
-
-        Serial.printf("Override state changed to: %s\n",override ? "OVERRIDE" : "no override");
-        mOverride = override;
-        _sendcmd(); // temp until ClockMaster sends this itself.
     }
 
     // shutdown the auxswitch.
@@ -112,7 +99,7 @@ class auxswitch : protected lightyswitch
         void _sendcmd()
         {
             jbuf buf;
-            if (mOverride || getMode()==kls_shutdown)
+            if (getMode()==kls_shutdown)
             {
                 Serial.printf("Telling %s to shutdown.\n",mIP.toString().c_str());
                 buf.setIDOnly(kCmd_Shutdown);
@@ -130,8 +117,6 @@ class auxswitch : protected lightyswitch
         udpbro * mUDP;
         IPAddress mIP;
         jbuzzer & mBuz;
-
-        bool mOverride;
 
         unsigned long mConfirmationTimeout;
 };

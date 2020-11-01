@@ -39,7 +39,6 @@ jbuzzer jbuz(12); // buzzer + on pin 12.
 
 lightyswitch gBossMain(27,16,21,true);
 std::vector<auxswitch> gSwitches;
-std::vector<bool> gOverride = {false,false,false,false};
 
 void setup()
 {
@@ -67,10 +66,7 @@ void setup()
 void applybossmain()
 {
   for (int i=0;i<gSwitches.size();++i)
-  {
-    gSwitches[i].Override(gOverride[i]);
     gSwitches[i].ShutDown(!gBossMain.ison());
-  }
 
   if (!gBossMain.ison())
     jbuz.playsong(4);
@@ -82,13 +78,6 @@ void loop()
 
   jbuz.loop();
   wifiota.loop();
-
-  if (firstloop)
-    { // request the clockmaster gives us our mode :-)
-      jbuf b;
-      b.setIDOnly(kReq_ClockMaster);
-      udp.send(b,kClockMasterIP);
-    }
 
   bool prevBossMain = gBossMain.ison();
   gBossMain.loop();
@@ -105,29 +94,6 @@ void loop()
     for (auto & s : gSwitches)
       if (s.getIP()==remoteaddr)
         s.handleUDP(b);
-
-    if (b.getID()==kCmd_ClockMaster)
-    { // clockmaster override!
-      tSwitch4State state = static_cast<tSwitch4State>(b.getInt());
-
-      switch(state)
-      {
-        case kState_AllOn:
-          gOverride = {false,false,false,false}; break;
-        case kState_AllOff:
-          gOverride = {true,true,true,true}; break;
-        case kState_JackInBed:
-          gOverride = {false,false,true,false}; break;
-        case kState_TomInBed:
-          gOverride = {true,false,true,true}; break;
-
-        default:
-          gOverride = {false,false,false,false}; break;
-      }
-
-      jbuz.playsong(8);
-      applybossmain();
-    }
   }
 
   firstloop=false;
