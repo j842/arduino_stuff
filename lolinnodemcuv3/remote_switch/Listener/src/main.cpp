@@ -49,6 +49,9 @@ class clientState
     bool isShutDown() const {
       return (mOverrideShutdown || mControllerShutdown);
     }
+    bool isOverride() const {
+      return mOverrideShutdown;
+    }
 
     rgb1023 getColour()
     {
@@ -108,12 +111,16 @@ void firstrun()
 
   trafficlights();
 
-  jbuf rbuf;
-  rbuf.setIDOnly(kReq_Power);
-  gUDP.send(rbuf,kControllerIP);
-
-  rbuf.setIDOnly(kReq_ClockMaster);
-  gUDP.send(rbuf,kClockMasterIP);
+  {
+    jbuf rbuf;
+    rbuf.setIDOnly(kReq_Power);
+    gUDP.send(rbuf,kControllerIP);
+  }
+  {
+    jbuf rbuf;
+    rbuf.setIDOnly(kReq_OverridePower);
+    gUDP.send(rbuf,kClockMasterIP);
+  }
 }
 
 void handleUDP()
@@ -139,6 +146,8 @@ void handleUDP()
     {
       Serial.println("ClockMaster overrides!");
       sClientState.setOverrideShutdown(b.getBool());
+      if (b.getBool()) 
+        gLed.fade(sClientState.getColour());
       break;
     }
 
@@ -151,9 +160,7 @@ void handleUDP()
   gRelay.set(!sClientState.isOn()); // we're using the Normally Open connection (D5 high at boot)
 
   // update LED state.
-  if (sClientState.isShutDown())
-    gLed.fade(sClientState.getColour());
-  else  
+  if (!sClientState.isOverride())
     gLed.setRGB(sClientState.getColour());
 
   // confirm our current status with the controller.

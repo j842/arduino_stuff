@@ -48,7 +48,7 @@ class fadeinfo
     public:
         fadeinfo() : mFading(false), mNextFadeStepTime(0),mFadeTotalTime(0),mFadeStartTime(0) {}
 
-        bool isFading() {return mFading;}
+        bool isFading() const {return mFading;}
         void fade(rgb1023 tocol, unsigned long howlong)
         {
             mFading=true;
@@ -127,6 +127,10 @@ class jrgbled
         {
             mFadeInfo.setCurrentColour(r);
             _setRGB(r);
+        }
+        bool isFading() const 
+        {
+            return mFadeInfo.isFading();
         }
 
     private:
