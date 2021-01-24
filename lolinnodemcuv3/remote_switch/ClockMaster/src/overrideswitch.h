@@ -82,7 +82,6 @@ class overrideswitch
             // determine based on time.
             switch (now.hour())
             {
-                case 23:
                 case 0: 
                 case 1:
                 case 2:
@@ -91,10 +90,11 @@ class overrideswitch
                 case 5:
                 case 6:  return kState_AllOff;
 
-                case 20: return kState_JackInBed;
+                case 20: 
+                case 21: return kState_JackInBed;
 
-                case 21: 
-                case 22: return kState_TomInBed;
+                case 22: 
+                case 23: return kState_TomInBed;
 
                 default: return kState_AllOn;
             }

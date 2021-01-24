@@ -1,3 +1,19 @@
+/*
+
+ClockMaster is 10.10.10.220
+
+Update via 
+https://10.10.10.220/update
+
+arduino_stuff\lolinnodemcuv3\remote_switch\ClockMaster\.pio\build\nodemcuv2\firmware.bin
+
+(ElegantOTA running)
+
+Sends override signals to individual aux controllers (12V power sources).
+
+*/
+
+
 #include <Arduino.h>
 
 // #include <ESP8266WiFi.h>
@@ -24,7 +40,7 @@ const IPAddress kControllerIP(10,10,10,200);
 const IPAddress kClockMasterIP(10,10,10,220);
 
 
-jwifiota wifiota("ESP32 Clock Master, Version 0.07");
+jwifiota wifiota("ESP32 Clock Master, Version 0.08");
 udpbro gUDP;
 
 const bool kScanI2C = false;
@@ -86,13 +102,11 @@ void setup()
 
 // -------------------------------------------------------------------------------
 
-// states to send to master:
+// states to send:
 // 7am  - On (all auxiliaries available)
 // 8pm  - Jack in bed (Jack's forced off)
-// 9pm  - Tom in bed (Tom's bedroom available, everything else forced off)
-// 11pm - Tom asleep (Everything forced off)
-
-
+// 10pm  - Tom in bed (Tom's bedroom available, everything else forced off)
+// 12pm - Tom asleep (Everything forced off)
 
 
 
