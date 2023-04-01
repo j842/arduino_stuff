@@ -1,0 +1,12 @@
+{
+	"folders": [
+		{
+			"path": "lolinnodemcuv3"
+		},
+		{
+			"name": "ClockMaster",
+			"path": "lolinnodemcuv3\\remote_switch\\ClockMaster"
+		}
+	],
+	"settings": {}
+}

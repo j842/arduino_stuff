@@ -3,7 +3,7 @@
 ClockMaster is 10.10.10.220
 
 Update via 
-https://10.10.10.220/update
+http://10.10.10.220/update
 
 arduino_stuff\lolinnodemcuv3\remote_switch\ClockMaster\.pio\build\nodemcuv2\firmware.bin
 
