@@ -1,0 +1,6 @@
+Remove brltty!
+Fix 99-udev thing as per platform.io message.
+
+
+https://github.com/rzeldent/esp32cam-rtsp
+
